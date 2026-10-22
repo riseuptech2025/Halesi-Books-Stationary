@@ -146,6 +146,36 @@ app.all(
   adapt(require("./api/upload/payment-sign.cjs"))
 );
 
+// ADMIN BLOGS
+app.all("/api/admin/blogs", adapt(require("./api/admin/blogs/index.cjs")));
+app.all("/api/admin/blogs/:id", adapt(require("./api/admin/blogs/[id].cjs")));
+
+// PUBLIC BLOGS
+app.all("/api/public/blogs", adapt(require("./api/public/blogs/index.cjs")));
+app.all("/api/public/blogs/:slug", adapt(require("./api/public/blogs/[slug].cjs")));
+
+// ADMIN ANNOUNCEMENTS
+app.all("/api/admin/announcements", adapt(require("./api/admin/announcements/index.cjs")));
+app.all("/api/admin/announcements/:id", adapt(require("./api/admin/announcements/[id].cjs")));
+
+// ADMIN MATERIALS
+app.all("/api/admin/materials", adapt(require("./api/admin/materials/index.cjs")));
+app.all("/api/admin/materials/:id", adapt(require("./api/admin/materials/[id].cjs")));
+
+// PUBLIC ANNOUNCEMENTS
+app.all("/api/public/announcements", adapt(require("./api/public/announcements/index.cjs")));
+app.all("/api/public/announcements/:id", adapt(require("./api/public/announcements/[id].cjs")));
+
+// PUBLIC MATERIALS
+app.all("/api/public/materials", adapt(require("./api/public/materials/index.cjs")));
+app.all("/api/public/materials/:id", adapt(require("./api/public/materials/[id].cjs")));
+
+// CONTENT UPLOAD
+app.all("/api/upload/content-sign", adapt(require("./api/upload/content-sign.cjs")));
+
+// BLOG UPLOAD
+app.all("/api/upload/blog-sign", adapt(require("./api/upload/blog-sign.cjs")));
+
 // PUBLIC SETTINGSapi/settings/public
 app.all("/api/settings/public", adapt(require("./api/settings/public.cjs")));
 

@@ -1,7 +1,12 @@
 // backend/api/lib/cloudinary.cjs
 const crypto = require("crypto");
 
-async function deleteImage(publicId) {
+/**
+ * Delete a Cloudinary asset.
+ * @param {string} publicId
+ * @param {"image"|"raw"|"video"} resourceType - default "image"
+ */
+async function deleteImage(publicId, resourceType = "image") {
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
   const apiKey = process.env.CLOUDINARY_API_KEY;
   const apiSecret = process.env.CLOUDINARY_API_SECRET;
@@ -23,7 +28,7 @@ async function deleteImage(publicId) {
   });
 
   const resp = await fetch(
-    `https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`,
+    `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/destroy`,
     {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },

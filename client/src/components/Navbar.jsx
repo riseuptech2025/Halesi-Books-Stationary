@@ -18,6 +18,27 @@ export default function Navbar() {
   const links = [
     { to: "/", label: "Home" },
     { to: "/books", label: "Books" },
+    {
+      label: "Announcements",
+      children: [
+        { to: "/announcements/nijamati", label: "Nijamati" },
+        { to: "/announcements/public-agency", label: "Public Agency" },
+        { to: "/announcements/security-agency", label: "Security Agency" },
+        { to: "/announcements/teacher-service", label: "Teacher Service Commission" },
+        { to: "/announcements/all", label: "All" },
+      ],
+    },
+    {
+      label: "Study Materials",
+      children: [
+        { to: "/materials/nijamati", label: "Nijamati" },
+        { to: "/materials/public-agency", label: "Public Agency" },
+        { to: "/materials/security-agency", label: "Security Agency" },
+        { to: "/materials/teacher-service", label: "Teacher Service Commission" },
+        { to: "/materials/all", label: "All" },
+      ],
+    },
+    { to: "/blog", label: "Blog" },
     { to: "/about", label: "About" },
     { to: "/contact", label: "Contact" },
   ];
@@ -78,22 +99,26 @@ export default function Navbar() {
 
         {/* ============= DESKTOP NAV ============= */}
         <nav className="hidden md:flex items-center gap-1">
-          {links.map((l) => (
-            <NavLink
-              key={l.to}
-              to={l.to}
-              end={l.to === "/"}
-              className={({ isActive }) =>
-                `px-4 py-2 rounded-lg text-sm font-semibold transition ${
-                  isActive
-                    ? "bg-red-50 text-red-700"
-                    : "text-gray-700 hover:bg-gray-50 hover:text-red-700"
-                }`
-              }
-            >
-              {l.label}
-            </NavLink>
-          ))}
+          {links.map((l) =>
+            l.children ? (
+              <NavDropdown key={l.label} item={l} />
+            ) : (
+              <NavLink
+                key={l.to}
+                to={l.to}
+                end={l.to === "/"}
+                className={({ isActive }) =>
+                  `px-4 py-2 rounded-lg text-sm font-semibold transition ${
+                    isActive
+                      ? "bg-red-50 text-red-700"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-red-700"
+                  }`
+                }
+              >
+                {l.label}
+              </NavLink>
+            )
+          )}
         </nav>
 
         {/* ============= RIGHT ACTIONS ============= */}
@@ -347,25 +372,49 @@ export default function Navbar() {
 
       {/* ============= MOBILE NAV ============= */}
       {open && (
-        <div className="md:hidden border-t border-gray-100 bg-white animate-fade-in">
+        <div className="md:hidden border-t border-gray-100 bg-white animate-fade-in max-h-[calc(100vh-4rem)] overflow-y-auto">
           <nav className="container-x py-3 flex flex-col gap-1">
-            {links.map((l) => (
-              <NavLink
-                key={l.to}
-                to={l.to}
-                end={l.to === "/"}
-                onClick={() => setOpen(false)}
-                className={({ isActive }) =>
-                  `px-4 py-2.5 rounded-lg text-sm font-semibold ${
-                    isActive
-                      ? "bg-red-50 text-red-700"
-                      : "text-gray-700 hover:bg-gray-50"
-                  }`
-                }
-              >
-                {l.label}
-              </NavLink>
-            ))}
+            {links.map((l) =>
+              l.children ? (
+                <div key={l.label} className="border-t border-gray-100 pt-2 mt-1">
+                  <p className="px-4 py-1 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                    {l.label}
+                  </p>
+                  {l.children.map((c) => (
+                    <NavLink
+                      key={c.to}
+                      to={c.to}
+                      onClick={() => setOpen(false)}
+                      className={({ isActive }) =>
+                        `block px-6 py-2 rounded-lg text-sm font-medium ${
+                          isActive
+                            ? "bg-red-50 text-red-700"
+                            : "text-gray-700 hover:bg-gray-50"
+                        }`
+                      }
+                    >
+                      {c.label}
+                    </NavLink>
+                  ))}
+                </div>
+              ) : (
+                <NavLink
+                  key={l.to}
+                  to={l.to}
+                  end={l.to === "/"}
+                  onClick={() => setOpen(false)}
+                  className={({ isActive }) =>
+                    `px-4 py-2.5 rounded-lg text-sm font-semibold ${
+                      isActive
+                        ? "bg-red-50 text-red-700"
+                        : "text-gray-700 hover:bg-gray-50"
+                    }`
+                  }
+                >
+                  {l.label}
+                </NavLink>
+              )
+            )}
             {isAuthenticated && (
               <>
                 <NavLink
@@ -402,6 +451,70 @@ export default function Navbar() {
   );
 }
 
+/* ============= NAV DROPDOWN (desktop) ============= */
+function NavDropdown({ item }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const onDoc = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className={`px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-1 ${
+          open
+            ? "bg-red-50 text-red-700"
+            : "text-gray-700 hover:bg-gray-50 hover:text-red-700"
+        }`}
+      >
+        {item.label}
+        <svg
+          className={`w-3.5 h-3.5 transition ${open ? "rotate-180" : ""}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute left-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50 animate-fade-in">
+          {item.children.map((c) => (
+            <NavLink
+              key={c.to}
+              to={c.to}
+              onClick={() => setOpen(false)}
+              className={({ isActive }) =>
+                `block px-4 py-2.5 text-sm font-medium transition ${
+                  isActive
+                    ? "bg-red-50 text-red-700"
+                    : "text-gray-700 hover:bg-gray-50"
+                }`
+              }
+            >
+              {c.label}
+            </NavLink>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ============= USER MENU ITEM ============= */
 function MenuItem({ to, icon, label, onClick, badge = 0 }) {
   return (
     <Link

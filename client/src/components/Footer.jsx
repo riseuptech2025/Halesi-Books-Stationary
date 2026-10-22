@@ -1,7 +1,16 @@
 // client/src/components/Footer.jsx
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 export default function Footer() {
+  const [showTop, setShowTop] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setShowTop(window.scrollY > 400);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   const socials = [
     {
       name: "Facebook",
@@ -45,11 +54,90 @@ export default function Footer() {
     },
   ];
 
+  const shopLinks = [
+    { to: "/books", label: "All Books" },
+    { to: "/books?category=Academic", label: "Academic" },
+    { to: "/books?category=Literature", label: "Literature" },
+    { to: "/books?category=Children", label: "Children" },
+    { to: "/books?category=Competitive", label: "Competitive" },
+  ];
+
+  const resourceLinks = [
+    { to: "/announcements/all", label: "All Notices" },
+    { to: "/announcements/nijamati", label: "Nijamati" },
+    { to: "/announcements/security-agency", label: "Security Agency" },
+    { to: "/materials/all", label: "Study Materials" },
+    { to: "/materials/nijamati", label: "Nijamati Notes" },
+    { to: "/blog", label: "Blog" },
+  ];
+
+  const companyLinks = [
+    { to: "/about", label: "About Us" },
+    { to: "/contact", label: "Contact" },
+    { to: "/profile?tab=orders", label: "Track Order" },
+    { to: "/profile?tab=wishlist", label: "Wishlist" },
+  ];
+
+  const trust = [
+    {
+      title: "Free Delivery",
+      sub: "Inside Halesi",
+      icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6",
+    },
+    {
+      title: "Secure Payment",
+      sub: "QR & COD",
+      icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
+    },
+    {
+      title: "Quality Books",
+      sub: "100% original",
+      icon: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253",
+    },
+    {
+      title: "Fast Support",
+      sub: "Reply in 24h",
+      icon: "M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z",
+    },
+  ];
+
   return (
-    <footer className="bg-gray-900 text-gray-300 mt-16">
-      <div className="container-x py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
-        {/* Brand */}
-        <div className="md:col-span-2">
+    <footer className="bg-gray-900 text-gray-300 mt-16 relative">
+      {/* Trust badges strip */}
+      <div className="border-b border-gray-800">
+        <div className="container-x py-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+          {trust.map((t) => (
+            <div key={t.title} className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gray-800 text-yellow-400 flex items-center justify-center flex-shrink-0">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d={t.icon}
+                  />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-bold text-white leading-tight">
+                  {t.title}
+                </p>
+                <p className="text-xs text-gray-400">{t.sub}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Main footer grid */}
+      <div className="container-x py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8">
+        {/* Brand column */}
+        <div className="lg:col-span-4">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl border-2 border-yellow-400 bg-white overflow-hidden flex items-center justify-center">
               <img
@@ -69,14 +157,84 @@ export default function Footer() {
               <span className="text-yellow-400">Centre</span>
             </p>
           </div>
-          <p className="text-sm text-gray-400 max-w-md">
+          <p className="text-sm text-gray-400 max-w-md leading-relaxed">
             Your trusted local bookstore — offering academic, literature, and
-            reference books for every reader. Visit us in Halesi or browse our
-            collection online.
+            reference books, plus study materials and exam notices for every
+            reader and student.
           </p>
 
-          {/* Social Media Links */}
-          <div className="mt-5">
+          {/* Contact quick info */}
+          <ul className="mt-5 space-y-2 text-sm">
+            <li className="flex items-start gap-2">
+              <svg
+                className="w-4 h-4 mt-0.5 text-yellow-400 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              <span className="text-gray-400">
+                Traffic Chwok, Biratnagar-9, Morang, Nepal
+              </span>
+            </li>
+            <li className="flex items-start gap-2">
+              <svg
+                className="w-4 h-4 mt-0.5 text-yellow-400 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                />
+              </svg>
+              <a
+                href="tel:+9779863958892"
+                className="text-gray-400 hover:text-yellow-400 transition"
+              >
+                +977 9863958892
+              </a>
+            </li>
+            <li className="flex items-start gap-2">
+              <svg
+                className="w-4 h-4 mt-0.5 text-yellow-400 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
+              </svg>
+              <a
+                href="mailto:info@halesibooks.com.np"
+                className="text-gray-400 hover:text-yellow-400 transition break-all"
+              >
+                info@halesibooks.com.np
+              </a>
+            </li>
+          </ul>
+
+          {/* Social media */}
+          <div className="mt-6">
             <h4 className="text-white font-bold mb-3 text-sm">Follow Us</h4>
             <div className="flex items-center gap-3">
               {socials.map((social) => (
@@ -96,105 +254,152 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Quick links */}
-        <div>
-          <h4 className="text-white font-bold mb-4">Quick Links</h4>
+        {/* Shop */}
+        <div className="lg:col-span-2">
+          <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wide">
+            Shop
+          </h4>
           <ul className="space-y-2 text-sm">
-            <li>
-              <Link to="/" className="hover:text-yellow-400 transition">
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link to="/books" className="hover:text-yellow-400 transition">
-                All Books
-              </Link>
-            </li>
-            <li>
-              <Link to="/about" className="hover:text-yellow-400 transition">
-                About Us
-              </Link>
-            </li>
-            <li>
-              <Link to="/contact" className="hover:text-yellow-400 transition">
-                Contact
-              </Link>
-            </li>
+            {shopLinks.map((l) => (
+              <li key={l.to}>
+                <Link
+                  to={l.to}
+                  className="text-gray-400 hover:text-yellow-400 transition"
+                >
+                  {l.label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
 
-        {/* Contact */}
-        <div>
-          <h4 className="text-white font-bold mb-4">Get in Touch</h4>
+        {/* Resources */}
+        <div className="lg:col-span-3">
+          <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wide">
+            Resources
+          </h4>
           <ul className="space-y-2 text-sm">
-            <li className="flex items-start gap-2">
-              <svg
-                className="w-4 h-4 mt-0.5 text-yellow-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
-              Traffic Chwok, Biratnagar-9, Morang, Nepal
-            </li>
-            <li className="flex items-start gap-2">
-              <svg
-                className="w-4 h-4 mt-0.5 text-yellow-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                />
-              </svg>
-              +977 9863958892
-            </li>
-            <li className="flex items-start gap-2">
-              <svg
-                className="w-4 h-4 mt-0.5 text-yellow-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                />
-              </svg>
-              info@halesibooks.com.np
-            </li>
+            {resourceLinks.map((l) => (
+              <li key={l.to}>
+                <Link
+                  to={l.to}
+                  className="text-gray-400 hover:text-yellow-400 transition inline-flex items-center gap-1.5"
+                >
+                  {l.label}
+                </Link>
+              </li>
+            ))}
           </ul>
+        </div>
+
+        {/* Company + Newsletter */}
+        <div className="lg:col-span-3">
+          <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wide">
+            Company
+          </h4>
+          <ul className="space-y-2 text-sm mb-6">
+            {companyLinks.map((l) => (
+              <li key={l.to}>
+                <Link
+                  to={l.to}
+                  className="text-gray-400 hover:text-yellow-400 transition"
+                >
+                  {l.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          <h4 className="text-white font-bold mb-2 text-sm uppercase tracking-wide">
+            Newsletter
+          </h4>
+          <p className="text-xs text-gray-400 mb-3">
+            Get updates on new arrivals, notices, and offers.
+          </p>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              alert("Thanks! Newsletter signup will be wired soon.");
+            }}
+            className="flex flex-col sm:flex-row gap-2"
+          >
+            <input
+              type="email"
+              required
+              placeholder="you@example.com"
+              aria-label="Email address"
+              className="flex-1 px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/30 transition"
+            />
+            <button
+              type="submit"
+              className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-gray-900 font-bold text-sm px-4 py-2 rounded-lg transition"
+            >
+              Join
+            </button>
+          </form>
         </div>
       </div>
 
-      {/* Bottom bar */}
+      {/* Map + bottom bar */}
+      <div className="border-t border-gray-800">
+        <div className="container-x py-4 grid grid-cols-1 lg:grid-cols-2 gap-4 items-center">
+          {/* Map (compact) */}
+          <div className="rounded-lg overflow-hidden border border-gray-800 h-32">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3572.0492589985056!2d87.27655067520774!3d26.454141076923467!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39ef750008fd3e57%3A0x7cf6eea6e4a46296!2sHalesi%20books%20Centre!5e0!3m2!1sen!2snp!4v1792475727425!5m2!1sen!2snp"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+              title="Halesi Books Centre Location"
+            />
+          </div>
+
+          <div className="text-xs text-gray-500">
+            <p className="mb-2">
+              <strong className="text-white">Halesi Books Centre</strong> —
+              serving students, teachers, and readers since 2015.
+            </p>
+            <div className="flex flex-wrap gap-x-4 gap-y-1">
+              <Link to="/about" className="hover:text-yellow-400 transition">
+                About
+              </Link>
+              <Link to="/contact" className="hover:text-yellow-400 transition">
+                Contact
+              </Link>
+              <Link to="/blog" className="hover:text-yellow-400 transition">
+                Blog
+              </Link>
+              <Link
+                to="/announcements/all"
+                className="hover:text-yellow-400 transition"
+              >
+                Notices
+              </Link>
+              <Link
+                to="/materials/all"
+                className="hover:text-yellow-400 transition"
+              >
+                Study Materials
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Legal bottom bar */}
       <div className="border-t border-gray-800">
         <div className="container-x py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
           <p>
             © {new Date().getFullYear()}{" "}
-            <strong>Halesi Books Centre</strong>. All rights reserved.
+            <strong className="text-white">Halesi Books Centre</strong>. All
+            rights reserved.
           </p>
 
-          {/* Mini social icons in bottom bar (optional) */}
-          <div className="flex items-center gap-3">
+          {/* Mini social icons */}
+          {/* <div className="flex items-center gap-3">
             {socials.map((social) => (
               <a
                 key={`bottom-${social.name}`}
@@ -207,7 +412,7 @@ export default function Footer() {
                 {social.icon}
               </a>
             ))}
-          </div>
+          </div> */}
 
           <p className="text-center">
             Designed & Developed by{" "}
@@ -229,6 +434,33 @@ export default function Footer() {
           </div>
         </div>
       </div>
+
+      {/* Back to top button */}
+      <button
+        type="button"
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        aria-label="Back to top"
+        title="Back to top"
+        className={`fixed bottom-6 right-6 z-40 w-11 h-11 rounded-full bg-red-700 hover:bg-red-800 text-white shadow-2xl flex items-center justify-center transition-all duration-300 ${
+          showTop
+            ? "opacity-100 translate-y-0 pointer-events-auto"
+            : "opacity-0 translate-y-4 pointer-events-none"
+        }`}
+      >
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M5 10l7-7m0 0l7 7m-7-7v18"
+          />
+        </svg>
+      </button>
     </footer>
   );
 }
