@@ -10,7 +10,7 @@ const CATEGORIES = [
   "Literature",
   "Religion",
   "Children",
-  "Competitive",
+  "Loksewa",
   "Reference",
 ];
 

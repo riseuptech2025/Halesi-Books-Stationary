@@ -59,7 +59,7 @@ export default function Footer() {
     { to: "/books?category=Academic", label: "Academic" },
     { to: "/books?category=Literature", label: "Literature" },
     { to: "/books?category=Children", label: "Children" },
-    { to: "/books?category=Competitive", label: "Competitive" },
+    { to: "/books?category=Loksewa", label: "Loksewa" },
   ];
 
   const resourceLinks = [
