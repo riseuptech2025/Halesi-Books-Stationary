@@ -12,6 +12,8 @@ const CATEGORIES = [
   "Children",
   "Loksewa",
   "Reference",
+  "Entrance",
+  "License",
 ];
 
 const SORTS = [
