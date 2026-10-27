@@ -17,6 +17,7 @@ export default function Navbar() {
 
   const links = [
     { to: "/", label: "Home" },
+    { to: "/about", label: "About" },
     { to: "/books", label: "Books" },
     {
       label: "Announcements",
@@ -39,7 +40,6 @@ export default function Navbar() {
       ],
     },
     { to: "/blog", label: "Blog" },
-    { to: "/about", label: "About" },
     { to: "/contact", label: "Contact" },
   ];
 
