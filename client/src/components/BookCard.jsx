@@ -24,7 +24,8 @@ export default function BookCard({ book }) {
       to={`/books/${book._id}`}
       className="group bg-white rounded-2xl shadow-md hover:shadow-2xl border-t-4 border-t-yellow-400 hover:-translate-y-1.5 transition-all duration-300 overflow-hidden flex flex-col"
     >
-      <div className="relative h-56 bg-gradient-to-br from-red-100 via-yellow-50 to-green-100 flex items-center justify-center overflow-hidden">
+      {/* 💡 5:7 aspect ratio cover area */}
+      <div className="relative aspect-[5/7] bg-gradient-to-br from-red-100 via-yellow-50 to-green-100 flex items-center justify-center overflow-hidden">
         {cover ? (
           <img
             src={cover}
@@ -33,7 +34,7 @@ export default function BookCard({ book }) {
             loading="lazy"
           />
         ) : (
-          <div className="w-20 h-28 bg-white rounded-lg shadow-xl flex items-center justify-center border-2 border-red-200">
+          <div className="w-[45%] aspect-[5/7] bg-white rounded-lg shadow-xl flex items-center justify-center border-2 border-red-200">
             <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"

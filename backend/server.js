@@ -173,6 +173,10 @@ app.all("/api/public/announcements/:id", adapt(require("./api/public/announcemen
 app.all("/api/public/materials", adapt(require("./api/public/materials/index.cjs")));
 app.all("/api/public/materials/:id", adapt(require("./api/public/materials/[id].cjs")));
 
+// AUTH — user (OTP signup)
+app.all("/api/auth/signup-request", adapt(require("./api/auth/signup-request.cjs")));
+app.all("/api/auth/signup-verify", adapt(require("./api/auth/signup-verify.cjs")));
+
 // CONTENT UPLOAD
 app.all("/api/upload/content-sign", adapt(require("./api/upload/content-sign.cjs")));
 
