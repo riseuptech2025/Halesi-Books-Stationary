@@ -25,7 +25,6 @@ export default function BookDetail() {
   const [activeTab, setActiveTab] = useState("details");
   const [copied, setCopied] = useState(false);
   const [addingCart, setAddingCart] = useState(false);
-  const [buyingNow, setBuyingNow] = useState(false);
   const [toast, setToast] = useState("");
   const [reviewSummary, setReviewSummary] = useState({
     averageRating: 0,
@@ -45,7 +44,6 @@ export default function BookDetail() {
         setActiveImage(0);
         setActiveTab("details");
 
-        // Fetch review summary for star display in the header
         try {
           const rev = await api.get(`/reviews/${id}`);
           if (!cancelled) {
@@ -71,7 +69,6 @@ export default function BookDetail() {
     };
   }, [id]);
 
-  // Scroll to top on book change
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [id]);
@@ -123,9 +120,9 @@ export default function BookDetail() {
     });
 
   const handleBuyNow = () =>
-  withAuth(() => {
-    navigate(`/checkout?bookId=${id}&qty=1`);
-  });
+    withAuth(() => {
+      navigate(`/checkout?bookId=${id}&qty=1`);
+    });
 
   // ---------- LOADING ----------
   if (loading) {
@@ -174,6 +171,17 @@ export default function BookDetail() {
   const mainImage = images[activeImage]?.url;
   const hasMultipleImages = images.length > 1;
   const wishlisted = inWishlist(id);
+
+  // 💡 Discount fields
+  const hasDiscount =
+    !!book.hasDiscount && Number(book.discountPercent) > 0;
+  const unitPrice = hasDiscount
+    ? Number(book.finalPrice)
+    : Number(book.price);
+  const originalPrice = hasDiscount
+    ? Number(book.originalPrice)
+    : Number(book.price);
+  const savings = originalPrice - unitPrice;
 
   const stockInfo = (() => {
     if (book.stock === 0)
@@ -269,6 +277,13 @@ export default function BookDetail() {
                 {book.category || "General"}
               </div>
 
+              {/* 💡 Discount ribbon */}
+              {hasDiscount && (
+                <div className="absolute top-4 right-16 bg-red-600 text-white text-sm font-extrabold uppercase tracking-wider px-3 py-1.5 rounded-full shadow-lg animate-pulse">
+                  -{book.discountPercent}% OFF
+                </div>
+              )}
+
               {hasMultipleImages && (
                 <div className="absolute top-4 right-4 bg-black/70 backdrop-blur text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5">
                   <svg
@@ -311,7 +326,7 @@ export default function BookDetail() {
               </div>
             )}
 
-            {/* Share row (under images) */}
+            {/* Share row */}
             <div className="mt-6 flex items-center gap-2 flex-wrap">
               <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide mr-1">
                 Share
@@ -431,16 +446,50 @@ export default function BookDetail() {
               )}
             </div>
 
-            {/* Price card */}
+            {/* 💡 Price card */}
             <div className="bg-gradient-to-br from-red-50 to-yellow-50 rounded-2xl border-2 border-yellow-200 p-5 my-6">
               <div className="flex items-end justify-between gap-4 flex-wrap">
                 <div>
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                    Price
+                    {hasDiscount ? "Sale Price" : "Price"}
                   </p>
-                  <p className="text-4xl font-extrabold text-green-700 leading-none">
-                    NPR {Number(book.price).toLocaleString()}
-                  </p>
+                  {hasDiscount ? (
+                    <div>
+                      <p className="text-4xl font-extrabold text-green-700 leading-none">
+                        NPR {unitPrice.toLocaleString()}
+                      </p>
+                      <div className="flex items-center gap-2 mt-2 flex-wrap">
+                        <p className="text-sm line-through text-gray-400">
+                          NPR {originalPrice.toLocaleString()}
+                        </p>
+                        <span className="text-xs font-bold bg-red-600 text-white px-2 py-0.5 rounded-full">
+                          Save {book.discountPercent}%
+                        </span>
+                        {book.offerName && (
+                          <span className="text-xs font-bold bg-yellow-500 text-white px-2 py-0.5 rounded-full">
+                            {book.offerName}
+                          </span>
+                        )}
+                      </div>
+                      {book.discountEndsAt && (
+                        <p className="text-xs text-red-700 font-semibold mt-2">
+                          ⏰ Offer ends{" "}
+                          {new Date(book.discountEndsAt).toLocaleDateString(
+                            "en-GB",
+                            {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            }
+                          )}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-4xl font-extrabold text-green-700 leading-none">
+                      NPR {originalPrice.toLocaleString()}
+                    </p>
+                  )}
                 </div>
                 <p className="text-xs text-gray-600 max-w-[180px] text-right">
                   {stockInfo.msg}
@@ -450,7 +499,6 @@ export default function BookDetail() {
 
             {/* Action buttons */}
             <div className="space-y-3 mb-6">
-              {/* Add to Cart + Buy Now row */}
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={handleAddToCart}
@@ -479,31 +527,26 @@ export default function BookDetail() {
 
                 <button
                   onClick={handleBuyNow}
-                  disabled={buyingNow || book.stock === 0}
+                  disabled={book.stock === 0}
                   className="flex items-center justify-center gap-2 bg-gradient-to-r from-red-700 to-red-600 hover:from-red-800 hover:to-red-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-red-500/30 hover:shadow-red-500/50 transition disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {buyingNow ? (
-                    <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 10V3L4 14h7v7l9-11h-7z"
-                      />
-                    </svg>
-                  )}
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
                   Buy Now
                 </button>
               </div>
 
-              {/* Wishlist + Call row */}
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={handleWishlist}
@@ -530,7 +573,7 @@ export default function BookDetail() {
                 </button>
 
                 <a
-                  href="tel:+9779800000000"
+                  href="tel:+9779863958892"
                   className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl shadow-md hover:shadow-lg transition"
                 >
                   <svg
@@ -550,7 +593,6 @@ export default function BookDetail() {
                 </a>
               </div>
 
-              {/* Signin nudge for guests */}
               {!isAuthenticated && (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3 text-xs text-yellow-800 flex items-center justify-between gap-2 flex-wrap">
                   <span>
@@ -685,12 +727,12 @@ export default function BookDetail() {
           </div>
         </div>
 
-        {/* ============ REVIEWS ============ */}
+        {/* REVIEWS */}
         <div id="reviews">
           <ReviewSection bookId={id} />
         </div>
 
-        {/* ============ RELATED BOOKS ============ */}
+        {/* RELATED */}
         <RelatedBooks category={book.category} excludeId={book._id} />
       </div>
     </div>
@@ -704,9 +746,7 @@ function DetailRow({ label, value }) {
       <p className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold mb-0.5">
         {label}
       </p>
-      <p className="text-sm font-semibold text-gray-800 break-words">
-        {value}
-      </p>
+      <p className="text-sm font-semibold text-gray-800 break-words">{value}</p>
     </div>
   );
 }

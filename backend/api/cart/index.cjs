@@ -3,6 +3,7 @@ const { ObjectId } = require("mongodb");
 const { connectToDatabase } = require("../lib/db.cjs");
 const { getUserFromRequest } = require("../lib/auth.cjs");
 const { setCors, handleOptions } = require("../lib/cors.cjs");
+const { withActiveOffers } = require("../lib/discount.cjs");
 
 module.exports = async function handler(req, res) {
   if (handleOptions(req, res)) return;
@@ -15,7 +16,6 @@ module.exports = async function handler(req, res) {
   const carts = db.collection("carts");
 
   try {
-    // ---------- GET cart ----------
     if (req.method === "GET") {
       const cart = await carts.findOne({ userId: decoded.id });
       const items = cart?.items || [];
@@ -34,13 +34,23 @@ module.exports = async function handler(req, res) {
           { _id: { $in: ids } },
           {
             projection: {
-              title: 1, author: 1, price: 1, images: 1, stock: 1,
+              title: 1,
+              author: 1,
+              price: 1,
+              images: 1,
+              stock: 1,
+              category: 1,
+              // 💡 needed by the discount helper
+              discountPercent: 1,
+              discountEndsAt: 1,
             },
           }
         )
         .toArray();
 
-      const byId = new Map(books.map((b) => [b._id.toString(), b]));
+      // 💡 Apply discount
+      const priced = await withActiveOffers(db, books);
+      const byId = new Map(priced.map((b) => [b._id.toString(), b]));
 
       const enriched = items
         .map((i) => {
@@ -51,7 +61,9 @@ module.exports = async function handler(req, res) {
             quantity: i.quantity,
             title: b.title,
             author: b.author,
-            price: b.price,
+            price: b.finalPrice,
+            originalPrice: b.originalPrice,
+            discountPercent: b.discountPercent || 0,
             image: b.images?.[0]?.url || null,
             stock: b.stock,
           };
@@ -67,7 +79,6 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ items: enriched, total, count });
     }
 
-    // ---------- POST add to cart ----------
     if (req.method === "POST") {
       const { bookId, quantity = 1 } = req.body || {};
       if (!bookId || !ObjectId.isValid(bookId)) {
@@ -102,7 +113,6 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ message: "Added to cart", items });
     }
 
-    // ---------- PUT update quantity ----------
     if (req.method === "PUT") {
       const { bookId, quantity } = req.body || {};
       if (!bookId || !ObjectId.isValid(bookId)) {
@@ -126,7 +136,6 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ message: "Cart updated" });
     }
 
-    // ---------- DELETE remove from cart ----------
     if (req.method === "DELETE") {
       const { bookId } = req.body || {};
       if (!bookId || !ObjectId.isValid(bookId)) {

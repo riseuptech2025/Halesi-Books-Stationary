@@ -11,13 +11,20 @@ export default function BookCard({ book }) {
       ? { label: "Only few left", cls: "bg-yellow-100 text-yellow-800" }
       : { label: "In Stock", cls: "bg-green-100 text-green-700" };
 
+  const hasDiscount = book.hasDiscount && Number(book.discountPercent) > 0;
+  const finalPrice = hasDiscount
+    ? Number(book.finalPrice)
+    : Number(book.price);
+  const originalPrice = hasDiscount
+    ? Number(book.originalPrice)
+    : Number(book.price);
+
   return (
     <Link
       to={`/books/${book._id}`}
       className="group bg-white rounded-2xl shadow-md hover:shadow-2xl border-t-4 border-t-yellow-400 hover:-translate-y-1.5 transition-all duration-300 overflow-hidden flex flex-col"
     >
-      {/* 5:7 portrait cover */}
-      <div className="relative aspect-[5/7] bg-gradient-to-br from-red-100 via-yellow-50 to-green-100 flex items-center justify-center overflow-hidden">
+      <div className="relative h-56 bg-gradient-to-br from-red-100 via-yellow-50 to-green-100 flex items-center justify-center overflow-hidden">
         {cover ? (
           <img
             src={cover}
@@ -27,12 +34,7 @@ export default function BookCard({ book }) {
           />
         ) : (
           <div className="w-20 h-28 bg-white rounded-lg shadow-xl flex items-center justify-center border-2 border-red-200">
-            <svg
-              className="w-10 h-10 text-red-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -47,23 +49,24 @@ export default function BookCard({ book }) {
           {book.category || "General"}
         </span>
 
-        {book.images?.length > 1 && (
-          <span className="absolute top-3 right-3 bg-black/60 backdrop-blur text-white text-[11px] font-semibold px-2 py-1 rounded-full flex items-center gap-1">
-            <svg
-              className="w-3 h-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-            {book.images.length}
+        {hasDiscount ? (
+          <span className="absolute top-3 right-3 bg-red-600 text-white text-xs font-extrabold px-2.5 py-1 rounded-full shadow-lg">
+            -{book.discountPercent}%
           </span>
+        ) : (
+          book.images?.length > 1 && (
+            <span className="absolute top-3 right-3 bg-black/60 backdrop-blur text-white text-[11px] font-semibold px-2 py-1 rounded-full flex items-center gap-1">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              {book.images.length}
+            </span>
+          )
         )}
       </div>
 
@@ -80,9 +83,26 @@ export default function BookCard({ book }) {
 
         <div className="mt-auto flex items-end justify-between">
           <div>
-            <p className="text-lg font-extrabold text-green-700">
-              NPR {Number(book.price).toLocaleString()}
-            </p>
+            {hasDiscount ? (
+              <div>
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <p className="text-lg font-extrabold text-green-700">
+                    NPR {finalPrice.toLocaleString()}
+                  </p>
+                  <p className="text-xs line-through text-gray-400">
+                    NPR {originalPrice.toLocaleString()}
+                  </p>
+                </div>
+                <span className="inline-block mt-0.5 text-[10px] font-bold bg-red-600 text-white px-1.5 py-0.5 rounded">
+                  {book.discountPercent}% OFF
+                  {book.offerName && ` · ${book.offerName}`}
+                </span>
+              </div>
+            ) : (
+              <p className="text-lg font-extrabold text-green-700">
+                NPR {finalPrice.toLocaleString()}
+              </p>
+            )}
           </div>
           <span
             className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${stockStatus.cls}`}

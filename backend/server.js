@@ -161,6 +161,9 @@ app.all("/api/admin/announcements/:id", adapt(require("./api/admin/announcements
 // ADMIN MATERIALS
 app.all("/api/admin/materials", adapt(require("./api/admin/materials/index.cjs")));
 app.all("/api/admin/materials/:id", adapt(require("./api/admin/materials/[id].cjs")));
+// ADMIN OFFERS
+app.all("/api/admin/offers", adapt(require("./api/admin/offers/index.cjs")));
+app.all("/api/admin/offers/:id", adapt(require("./api/admin/offers/[id].cjs")));
 
 // PUBLIC ANNOUNCEMENTS
 app.all("/api/public/announcements", adapt(require("./api/public/announcements/index.cjs")));

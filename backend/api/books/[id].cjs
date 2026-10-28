@@ -10,11 +10,8 @@ module.exports = async function handler(req, res) {
   setCors(req, res);
 
   const decoded = getAdminFromRequest(req);
-  if (!decoded) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
+  if (!decoded) return res.status(401).json({ message: "Unauthorized" });
 
-  // Read from EITHER source (Vercel or Express)
   const id = req.query?.id || req.params?.id;
   if (!id || !ObjectId.isValid(id)) {
     return res.status(400).json({ message: "Invalid book ID" });
@@ -27,20 +24,25 @@ module.exports = async function handler(req, res) {
   try {
     if (req.method === "GET") {
       const book = await books.findOne({ _id });
-      if (!book) {
-        return res.status(404).json({ message: "Book not found" });
-      }
+      if (!book) return res.status(404).json({ message: "Book not found" });
       return res.status(200).json(book);
     }
 
-    if (req.method === "PUT") {
-      const { title, author, isbn, price, stock, category, images } =
-        req.body || {};
+    if (req.method === "PUT" || req.method === "PATCH") {
+      const {
+        title,
+        author,
+        isbn,
+        price,
+        stock,
+        category,
+        images,
+        discountPercent,
+        discountEndsAt,
+      } = req.body || {};
 
       const existing = await books.findOne({ _id });
-      if (!existing) {
-        return res.status(404).json({ message: "Book not found" });
-      }
+      if (!existing) return res.status(404).json({ message: "Book not found" });
 
       let removedPublicIds = [];
       if (Array.isArray(images)) {
@@ -65,6 +67,20 @@ module.exports = async function handler(req, res) {
               }))
             : [],
         }),
+
+        // 💡 per-book discount
+        ...(discountPercent !== undefined && {
+          discountPercent: Math.max(
+            0,
+            Math.min(90, Number(discountPercent) || 0)
+          ),
+        }),
+        ...(discountEndsAt !== undefined && {
+          discountEndsAt: discountEndsAt
+            ? new Date(discountEndsAt)
+            : null,
+        }),
+
         updatedAt: new Date(),
       };
 
@@ -85,9 +101,7 @@ module.exports = async function handler(req, res) {
 
     if (req.method === "DELETE") {
       const book = await books.findOne({ _id });
-      if (!book) {
-        return res.status(404).json({ message: "Book not found" });
-      }
+      if (!book) return res.status(404).json({ message: "Book not found" });
 
       const publicIds = (book.images || []).map((i) => i.publicId);
       if (publicIds.length > 0) {

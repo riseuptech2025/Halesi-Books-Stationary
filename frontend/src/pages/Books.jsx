@@ -5,15 +5,13 @@ import BookFormModal from "../components/BookFormModal";
 import api from "../utils/api";
 
 const CATEGORIES = [
-  "General Books",
-  "Academic Books",
-  "Literature Books",
-  "Religion Books",
-  "Children Books",
-  "Loksewa Books",
-  "Reference Books",
-  "Entrance Books",
-  "License Books",
+  "General",
+  "Academic",
+  "Literature",
+  "Religion",
+  "Children",
+  "Competitive",
+  "Reference",
 ];
 
 export default function Books() {
@@ -26,7 +24,6 @@ export default function Books() {
   const [editingBook, setEditingBook] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
 
-  // ============ FETCH ============
   const fetchBooks = async () => {
     setLoading(true);
     setError("");
@@ -46,7 +43,6 @@ export default function Books() {
     fetchBooks();
   }, []);
 
-  // ============ FILTER ============
   const filteredBooks = useMemo(() => {
     return books.filter((b) => {
       const matchesSearch =
@@ -62,11 +58,9 @@ export default function Books() {
     });
   }, [books, search, categoryFilter]);
 
-  // ============ CREATE / UPDATE ============
   const handleSave = async (formData) => {
     if (editingBook) {
       const { data } = await api.put(`/books/${editingBook._id}`, formData);
-      // Replace the edited book with the server response
       setBooks((prev) =>
         prev.map((b) => (b._id === editingBook._id ? data : b))
       );
@@ -78,7 +72,6 @@ export default function Books() {
     }
   };
 
-  // ============ DELETE ============
   const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this book?")) return;
     setDeletingId(id);
@@ -112,10 +105,9 @@ export default function Books() {
       title="Books Management"
       subtitle="Manage your book inventory — add, edit, or remove books."
     >
-      {/* ============ TOOLBAR ============ */}
+      {/* Toolbar */}
       <div className="bg-white rounded-2xl shadow-md border-l-4 border-l-red-600 p-4 mb-6">
         <div className="flex flex-col md:flex-row md:items-center gap-3">
-          {/* Search */}
           <div className="flex-1 relative">
             <svg
               className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
@@ -139,7 +131,6 @@ export default function Books() {
             />
           </div>
 
-          {/* Category filter */}
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
@@ -147,35 +138,21 @@ export default function Books() {
           >
             <option value="All">All Categories</option>
             {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
+              <option key={c} value={c}>{c}</option>
             ))}
           </select>
 
-          {/* Add button */}
           <button
             onClick={openAddModal}
             className="flex items-center justify-center gap-2 bg-gradient-to-r from-red-700 to-red-600 hover:from-red-800 hover:to-red-700 text-white font-semibold py-2.5 px-5 rounded-xl shadow-lg shadow-red-500/30 hover:shadow-red-500/50 hover:scale-[1.02] active:scale-[0.98] transition"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             Add Book
           </button>
         </div>
 
-        {/* Result count */}
         <div className="mt-3 flex items-center gap-3 text-xs text-gray-500">
           <span className="inline-flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-red-500" />
@@ -195,7 +172,6 @@ export default function Books() {
         </div>
       </div>
 
-      {/* ============ LOADING ============ */}
       {loading && (
         <div className="bg-white rounded-2xl shadow-md p-16 flex flex-col items-center justify-center">
           <div className="w-12 h-12 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mb-4" />
@@ -203,14 +179,9 @@ export default function Books() {
         </div>
       )}
 
-      {/* ============ ERROR ============ */}
       {error && !loading && (
         <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-5 py-4 rounded-xl mb-6 flex items-start gap-3">
-          <svg
-            className="w-5 h-5 flex-shrink-0 mt-0.5"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
+          <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
             <path
               fillRule="evenodd"
               d="M18 10A8 8 0 11 2 10a8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
@@ -230,16 +201,10 @@ export default function Books() {
         </div>
       )}
 
-      {/* ============ EMPTY ============ */}
       {!loading && !error && filteredBooks.length === 0 && (
         <div className="bg-white rounded-2xl shadow-md p-16 flex flex-col items-center text-center">
           <div className="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center mb-4">
-            <svg
-              className="w-10 h-10 text-red-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -250,9 +215,7 @@ export default function Books() {
           </div>
           {books.length === 0 ? (
             <>
-              <p className="text-base font-semibold text-gray-800">
-                No books added yet
-              </p>
+              <p className="text-base font-semibold text-gray-800">No books added yet</p>
               <p className="text-sm text-gray-500 mt-1 mb-5">
                 Start by adding your first book to the inventory.
               </p>
@@ -260,27 +223,15 @@ export default function Books() {
                 onClick={openAddModal}
                 className="flex items-center gap-2 bg-gradient-to-r from-red-700 to-red-600 hover:from-red-800 hover:to-red-700 text-white font-semibold py-2.5 px-5 rounded-xl shadow-lg shadow-red-500/30 transition"
               >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4v16m8-8H4"
-                  />
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
                 Add First Book
               </button>
             </>
           ) : (
             <>
-              <p className="text-base font-semibold text-gray-800">
-                No books match your filters
-              </p>
+              <p className="text-base font-semibold text-gray-800">No books match your filters</p>
               <p className="text-sm text-gray-500 mt-1">
                 Try adjusting your search or category filter.
               </p>
@@ -289,7 +240,6 @@ export default function Books() {
         </div>
       )}
 
-      {/* ============ BOOKS GRID ============ */}
       {!loading && !error && filteredBooks.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {filteredBooks.map((book) => (
@@ -304,7 +254,6 @@ export default function Books() {
         </div>
       )}
 
-      {/* ============ MODAL ============ */}
       {showModal && (
         <BookFormModal
           book={editingBook}
@@ -325,15 +274,18 @@ function BookCard({ book, onEdit, onDelete, deleting }) {
     book.stock === 0
       ? { label: "Out of stock", cls: "bg-red-100 text-red-700" }
       : book.stock <= 5
-      ? {
-          label: `Low stock (${book.stock})`,
-          cls: "bg-yellow-100 text-yellow-800",
-        }
+      ? { label: `Low stock (${book.stock})`, cls: "bg-yellow-100 text-yellow-800" }
       : { label: `In stock (${book.stock})`, cls: "bg-green-100 text-green-700" };
+
+  // Determine what price to show (works whether or not admin GET is decorated)
+  const discountPercent = Number(book.discountPercent) || 0;
+  const hasPerBookDiscount = discountPercent > 0;
+  const finalPrice = hasPerBookDiscount
+    ? Math.round(book.price * (1 - discountPercent / 100) * 100) / 100
+    : Number(book.price) || 0;
 
   return (
     <div className="group bg-white rounded-2xl shadow-md hover:shadow-xl border-t-4 border-t-yellow-400 hover:-translate-y-1 transition-all duration-200 overflow-hidden flex flex-col">
-      {/* Cover / placeholder */}
       <div className="relative h-48 bg-gradient-to-br from-red-100 via-yellow-50 to-green-100 flex items-center justify-center overflow-hidden">
         {cover ? (
           <img
@@ -341,18 +293,11 @@ function BookCard({ book, onEdit, onDelete, deleting }) {
             alt={book.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
-            onError={(e) => {
-              e.currentTarget.style.display = "none";
-            }}
+            onError={(e) => { e.currentTarget.style.display = "none"; }}
           />
         ) : (
           <div className="w-16 h-20 bg-white rounded-lg shadow-lg flex items-center justify-center border-2 border-red-200">
-            <svg
-              className="w-8 h-8 text-red-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -363,20 +308,19 @@ function BookCard({ book, onEdit, onDelete, deleting }) {
           </div>
         )}
 
-        {/* Category badge */}
         <span className="absolute top-3 left-3 bg-white/90 backdrop-blur text-red-700 text-xs font-semibold px-2.5 py-1 rounded-full shadow">
           {book.category || "General"}
         </span>
 
-        {/* Image count badge */}
-        {book.images?.length > 1 && (
+        {hasPerBookDiscount && (
+          <span className="absolute top-3 right-3 bg-red-600 text-white text-xs font-extrabold px-2.5 py-1 rounded-full shadow-lg">
+            -{discountPercent}%
+          </span>
+        )}
+
+        {!hasPerBookDiscount && book.images?.length > 1 && (
           <span className="absolute top-3 right-3 bg-black/60 backdrop-blur text-white text-xs font-semibold px-2 py-1 rounded-full flex items-center gap-1">
-            <svg
-              className="w-3 h-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -389,7 +333,6 @@ function BookCard({ book, onEdit, onDelete, deleting }) {
         )}
       </div>
 
-      {/* Body */}
       <div className="p-4 flex-1 flex flex-col">
         <h3
           className="font-bold text-gray-900 text-base leading-snug line-clamp-2 mb-1"
@@ -402,9 +345,22 @@ function BookCard({ book, onEdit, onDelete, deleting }) {
         </p>
 
         <div className="flex items-center justify-between mb-3">
-          <p className="text-lg font-bold text-green-700">
-            NPR {Number(book.price).toLocaleString()}
-          </p>
+          <div>
+            {hasPerBookDiscount ? (
+              <div>
+                <p className="text-lg font-bold text-green-700">
+                  NPR {finalPrice.toLocaleString()}
+                </p>
+                <p className="text-xs line-through text-gray-400">
+                  NPR {Number(book.price).toLocaleString()}
+                </p>
+              </div>
+            ) : (
+              <p className="text-lg font-bold text-green-700">
+                NPR {Number(book.price).toLocaleString()}
+              </p>
+            )}
+          </div>
           <span
             className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${stockStatus.cls}`}
           >
@@ -413,23 +369,15 @@ function BookCard({ book, onEdit, onDelete, deleting }) {
         </div>
 
         {book.isbn && (
-          <p className="text-[11px] text-gray-400 mb-3 truncate">
-            ISBN: {book.isbn}
-          </p>
+          <p className="text-[11px] text-gray-400 mb-3 truncate">ISBN: {book.isbn}</p>
         )}
 
-        {/* Actions */}
         <div className="mt-auto flex items-center gap-2 pt-3 border-t border-gray-100">
           <button
             onClick={onEdit}
             className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 py-2 rounded-lg transition"
           >
-            <svg
-              className="w-3.5 h-3.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -451,12 +399,7 @@ function BookCard({ book, onEdit, onDelete, deleting }) {
               </>
             ) : (
               <>
-                <svg
-                  className="w-3.5 h-3.5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"

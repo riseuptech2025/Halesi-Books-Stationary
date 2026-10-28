@@ -3,6 +3,7 @@ const { ObjectId } = require("mongodb");
 const { connectToDatabase } = require("../lib/db.cjs");
 const { getUserFromRequest } = require("../lib/auth.cjs");
 const { setCors, handleOptions } = require("../lib/cors.cjs");
+const { withActiveOffers } = require("../lib/discount.cjs");
 
 module.exports = async function handler(req, res) {
   if (handleOptions(req, res)) return;
@@ -16,7 +17,6 @@ module.exports = async function handler(req, res) {
   const _id = new ObjectId(decoded.id);
 
   try {
-    // ---------- GET wishlist (with full book data) ----------
     if (req.method === "GET") {
       const user = await users.findOne({ _id });
       const ids = (user?.wishlist || [])
@@ -31,17 +31,24 @@ module.exports = async function handler(req, res) {
           { _id: { $in: ids } },
           {
             projection: {
-              title: 1, author: 1, price: 1, category: 1,
-              images: 1, stock: 1, isbn: 1,
+              title: 1,
+              author: 1,
+              price: 1,
+              category: 1,
+              images: 1,
+              stock: 1,
+              isbn: 1,
+              discountPercent: 1,
+              discountEndsAt: 1,
             },
           }
         )
         .toArray();
 
-      return res.status(200).json(books);
+      const priced = await withActiveOffers(db, books);
+      return res.status(200).json(priced);
     }
 
-    // ---------- POST toggle ----------
     if (req.method === "POST") {
       const { bookId } = req.body || {};
       if (!bookId || !ObjectId.isValid(bookId)) {

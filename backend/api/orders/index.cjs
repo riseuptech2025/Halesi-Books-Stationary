@@ -4,6 +4,7 @@ const { connectToDatabase } = require("../lib/db.cjs");
 const { getUserFromRequest } = require("../lib/auth.cjs");
 const { setCors, handleOptions } = require("../lib/cors.cjs");
 const { getSettings } = require("../lib/settings.cjs");
+const { withActiveOffers } = require("../lib/discount.cjs");
 
 module.exports = async function handler(req, res) {
   if (handleOptions(req, res)) return;
@@ -18,7 +19,6 @@ module.exports = async function handler(req, res) {
   const settings = await getSettings();
 
   try {
-    // ---------- GET my orders ----------
     if (req.method === "GET") {
       const list = await orders
         .find({ userId: decoded.id })
@@ -27,7 +27,6 @@ module.exports = async function handler(req, res) {
       return res.status(200).json(list);
     }
 
-    // ---------- POST create order ----------
     if (req.method === "POST") {
       console.log("📥 POST /api/orders body:", JSON.stringify(req.body));
 
@@ -39,12 +38,10 @@ module.exports = async function handler(req, res) {
         deliveryZoneId,
       } = req.body || {};
 
-      // ---------- Validate items ----------
       if (!Array.isArray(items) || items.length === 0) {
         return res.status(400).json({ message: "Cart is empty" });
       }
 
-      // ---------- Validate address ----------
       if (
         !shippingAddress ||
         !shippingAddress.name ||
@@ -56,7 +53,6 @@ module.exports = async function handler(req, res) {
           .json({ message: "Shipping address is required" });
       }
 
-      // ---------- Payment method ----------
       const method = paymentMethod === "cod" ? "cod" : "qr";
       const allowQR = settings.paymentMethods?.qr !== false;
       const allowCOD = settings.paymentMethods?.cod !== false;
@@ -72,7 +68,6 @@ module.exports = async function handler(req, res) {
         });
       }
 
-      // ---------- Delivery zone (LENIENT) ----------
       const zones = Array.isArray(settings.deliveryZones)
         ? settings.deliveryZones
         : [];
@@ -87,7 +82,6 @@ module.exports = async function handler(req, res) {
               .json({ message: "Invalid delivery zone" });
           }
         } else {
-          // Fallback: use first zone so old clients don't break
           console.warn(
             "⚠️ No deliveryZoneId received — using first zone:",
             zones[0]?.id
@@ -100,7 +94,6 @@ module.exports = async function handler(req, res) {
         ? Number(chosenZone.charge) || 0
         : Number(settings.deliveryCharge) || 0;
 
-      // ---------- Enrich items + validate stock ----------
       const validBookIds = items
         .filter((i) => i && i.bookId && ObjectId.isValid(i.bookId))
         .map((i) => new ObjectId(i.bookId));
@@ -119,12 +112,18 @@ module.exports = async function handler(req, res) {
               price: 1,
               images: 1,
               stock: 1,
+              category: 1,
+              // 💡 needed by the discount helper
+              discountPercent: 1,
+              discountEndsAt: 1,
             },
           }
         )
         .toArray();
 
-      const byId = new Map(bookDocs.map((b) => [b._id.toString(), b]));
+      // 💡 Apply discount
+      const pricedBooks = await withActiveOffers(db, bookDocs);
+      const byId = new Map(pricedBooks.map((b) => [b._id.toString(), b]));
 
       for (const item of items) {
         const b = byId.get(item.bookId);
@@ -150,7 +149,9 @@ module.exports = async function handler(req, res) {
           bookId: i.bookId,
           title: b.title,
           author: b.author,
-          price: b.price,
+          price: b.finalPrice, // discounted price
+          originalPrice: b.originalPrice, // for receipts
+          discountPercent: b.discountPercent || 0,
           image: b.images?.[0]?.url || null,
           quantity: Number(i.quantity) || 1,
         };
@@ -208,7 +209,6 @@ module.exports = async function handler(req, res) {
         updatedAt: new Date(),
       };
 
-      // ---------- Decrement stock ----------
       for (const item of enrichedItems) {
         await books.updateOne(
           { _id: new ObjectId(item.bookId) },
@@ -221,7 +221,6 @@ module.exports = async function handler(req, res) {
 
       const result = await orders.insertOne(doc);
 
-      // Clear cart
       await db
         .collection("carts")
         .updateOne(

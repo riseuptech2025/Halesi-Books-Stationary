@@ -1,6 +1,7 @@
-// backend/api/public/books/index.cjs
+// backend/api/public/books/index.cjs — PUBLIC
 const { connectToDatabase } = require("../../lib/db.cjs");
 const { setCors, handleOptions } = require("../../lib/cors.cjs");
+const { withActiveOffers } = require("../../lib/discount.cjs");
 
 module.exports = async function handler(req, res) {
   if (handleOptions(req, res)) return;
@@ -31,7 +32,6 @@ module.exports = async function handler(req, res) {
 
     const list = await books
       .find(filter, {
-        // Only expose safe fields to the public
         projection: {
           title: 1,
           author: 1,
@@ -40,14 +40,18 @@ module.exports = async function handler(req, res) {
           category: 1,
           images: 1,
           createdAt: 1,
-          stock: 1, // needed for "in stock / out of stock" badge
+          stock: 1,
+          // 💡 needed by the discount helper
+          discountPercent: 1,
+          discountEndsAt: 1,
         },
       })
       .sort(sortOption)
       .limit(200)
       .toArray();
 
-    return res.status(200).json(list);
+    const priced = await withActiveOffers(db, list);
+    return res.status(200).json(priced);
   } catch (err) {
     console.error("Public books error:", err);
     return res.status(500).json({ message: "Internal server error" });

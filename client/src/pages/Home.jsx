@@ -7,6 +7,7 @@ import BookCard from "../components/BookCard";
 export default function Home() {
   const [featured, setFeatured] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [offerBanner, setOfferBanner] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -15,6 +16,15 @@ export default function Home() {
           params: { sort: "createdAt" },
         });
         setFeatured(data.slice(0, 8));
+
+        // Pick a live offer to announce
+        const withOffer = data.find((b) => b.offerName && b.hasDiscount);
+        if (withOffer) {
+          setOfferBanner({
+            name: withOffer.offerName,
+            percent: withOffer.discountPercent,
+          });
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -25,6 +35,16 @@ export default function Home() {
 
   return (
     <div className="animate-fade-in">
+      {/* 💡 Offer banner */}
+      {offerBanner && (
+        <div className="bg-gradient-to-r from-red-600 to-yellow-500 text-white text-center py-2.5 px-4 text-sm font-bold">
+          🎉 {offerBanner.name} — {offerBanner.percent}% OFF on selected books!{" "}
+          <Link to="/books" className="underline">
+            Shop now →
+          </Link>
+        </div>
+      )}
+
       {/* HERO */}
       <section className="relative overflow-hidden bg-gradient-to-br from-red-50 via-yellow-50 to-green-50">
         <div className="absolute -top-24 -left-24 w-72 h-72 bg-red-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40" />
@@ -53,12 +73,7 @@ export default function Home() {
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link to="/books" className="btn-primary inline-flex items-center gap-2">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -69,12 +84,7 @@ export default function Home() {
                 Browse Collection
               </Link>
               <Link to="/contact" className="btn-outline inline-flex items-center gap-2">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -86,7 +96,6 @@ export default function Home() {
               </Link>
             </div>
 
-            {/* Trust row */}
             <div className="mt-10 flex items-center gap-6">
               <div>
                 <p className="text-2xl font-extrabold text-red-700">1000+</p>
@@ -95,21 +104,16 @@ export default function Home() {
               <div className="w-px h-10 bg-gray-300" />
               <div>
                 <p className="text-2xl font-extrabold text-green-700">10+</p>
-                <p className="text-xs text-gray-500 font-medium">
-                  Years Experience
-                </p>
+                <p className="text-xs text-gray-500 font-medium">Years Experience</p>
               </div>
               <div className="w-px h-10 bg-gray-300" />
               <div>
                 <p className="text-2xl font-extrabold text-yellow-500">5000+</p>
-                <p className="text-xs text-gray-500 font-medium">
-                  Happy Readers
-                </p>
+                <p className="text-xs text-gray-500 font-medium">Happy Readers</p>
               </div>
             </div>
           </div>
 
-          {/* Hero image / decorative stack */}
           <div className="relative hidden md:block">
             <div className="relative w-full max-w-md mx-auto aspect-square">
               <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-red-200 via-yellow-100 to-green-200 rotate-6 shadow-2xl" />
@@ -146,18 +150,8 @@ export default function Home() {
             className="hidden sm:flex items-center gap-1 text-sm font-semibold text-red-700 hover:text-red-800 hover:underline"
           >
             View all
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </Link>
         </div>
@@ -165,10 +159,7 @@ export default function Home() {
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
             {[...Array(4)].map((_, i) => (
-              <div
-                key={i}
-                className="bg-white rounded-2xl shadow-md overflow-hidden animate-pulse"
-              >
+              <div key={i} className="bg-white rounded-2xl shadow-md overflow-hidden animate-pulse">
                 <div className="h-56 bg-gray-100" />
                 <div className="p-4 space-y-2">
                   <div className="h-4 bg-gray-100 rounded w-3/4" />
@@ -181,12 +172,7 @@ export default function Home() {
         ) : featured.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-md p-12 text-center">
             <div className="w-16 h-16 mx-auto rounded-full bg-red-50 flex items-center justify-center mb-3">
-              <svg
-                className="w-8 h-8 text-red-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -195,9 +181,7 @@ export default function Home() {
                 />
               </svg>
             </div>
-            <p className="font-semibold text-gray-800">
-              No books available yet
-            </p>
+            <p className="font-semibold text-gray-800">No books available yet</p>
             <p className="text-sm text-gray-500 mt-1">
               Check back soon — we're adding new books regularly.
             </p>
@@ -221,8 +205,7 @@ export default function Home() {
                 Can't find what you're looking for?
               </h3>
               <p className="text-red-100 mt-2 max-w-lg">
-                We can order any book for you — just drop by the store or give
-                us a call. Special orders arrive within 3–5 days.
+                We can order any book for you — just drop by the store or give us a call. Special orders arrive within 3–5 days.
               </p>
             </div>
             <Link

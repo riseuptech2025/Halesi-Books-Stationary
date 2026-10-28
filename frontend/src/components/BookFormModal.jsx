@@ -16,28 +16,15 @@ const emptyForm = {
   language: "",
   colorFormat: "",
   description: "",
+  discountPercent: "",
+  discountEndsAt: "",
 };
 
-const LANGUAGES = [
-  "English",
-  "Nepali",
-  "Hindi",
-  "Sanskrit",
-  "Tibetan",
-  "Other",
-];
-
-const FORMATS = [
-  "Paperback",
-  "Hardcover",
-  "E-Book",
-  "Audiobook",
-  "Spiral",
-  "Other",
-];
+const LANGUAGES = ["English", "Nepali", "Hindi", "Sanskrit", "Tibetan", "Other"];
+const FORMATS = ["Paperback", "Hardcover", "E-Book", "Audiobook", "Spiral", "Other"];
 
 export default function BookFormModal({ book, categories, onSave, onClose }) {
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState({ ...emptyForm });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -58,9 +45,13 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
         language: book.language || "",
         colorFormat: book.colorFormat || "",
         description: book.description || "",
+        discountPercent: book.discountPercent || "",
+        discountEndsAt: book.discountEndsAt
+          ? new Date(book.discountEndsAt).toISOString().slice(0, 10)
+          : "",
       });
     } else {
-      setForm(emptyForm);
+      setForm({ ...emptyForm });
     }
   }, [book]);
 
@@ -92,6 +83,13 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
       setError("Please enter a valid stock quantity.");
       return;
     }
+    if (
+      form.discountPercent !== "" &&
+      (Number(form.discountPercent) < 0 || Number(form.discountPercent) > 90)
+    ) {
+      setError("Discount must be between 0 and 90 percent.");
+      return;
+    }
 
     setSaving(true);
     try {
@@ -108,6 +106,10 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
         language: form.language.trim(),
         colorFormat: form.colorFormat.trim(),
         description: form.description,
+        discountPercent: Number(form.discountPercent) || 0,
+        discountEndsAt: form.discountEndsAt
+          ? new Date(form.discountEndsAt).toISOString()
+          : null,
       });
       onClose();
     } catch (err) {
@@ -129,12 +131,7 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center">
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -163,12 +160,7 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
             className="w-9 h-9 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-800 transition"
             aria-label="Close"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -183,11 +175,7 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           {error && (
             <div className="flex items-start gap-2 bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-lg text-sm">
-              <svg
-                className="w-5 h-5 flex-shrink-0 mt-0.5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
+              <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                 <path
                   fillRule="evenodd"
                   d="M18 10A8 8 0 11 2 10a8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
@@ -275,9 +263,7 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
               >
                 <option value="">Select...</option>
                 {LANGUAGES.map((l) => (
-                  <option key={l} value={l}>
-                    {l}
-                  </option>
+                  <option key={l} value={l}>{l}</option>
                 ))}
               </select>
             </Field>
@@ -291,9 +277,7 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
               >
                 <option value="">Select...</option>
                 {FORMATS.map((f) => (
-                  <option key={f} value={f}>
-                    {f}
-                  </option>
+                  <option key={f} value={f}>{f}</option>
                 ))}
               </select>
             </Field>
@@ -339,13 +323,42 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
                 className="input-base border-red-focus"
               >
                 {categories.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
+                  <option key={c} value={c}>{c}</option>
                 ))}
               </select>
             </Field>
           </div>
+
+          {/* ---- DISCOUNT ---- */}
+          <SectionLabel>Discount (optional)</SectionLabel>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field label="Discount %" accent="yellow">
+              <input
+                type="number"
+                name="discountPercent"
+                value={form.discountPercent}
+                onChange={handleChange}
+                min="0"
+                max="90"
+                placeholder="0"
+                className="input-base border-red-focus"
+              />
+            </Field>
+
+            <Field label="Discount Ends On (optional)" accent="yellow">
+              <input
+                type="date"
+                name="discountEndsAt"
+                value={form.discountEndsAt}
+                onChange={handleChange}
+                className="input-base border-red-focus"
+              />
+            </Field>
+          </div>
+          <p className="text-[11px] text-gray-400 -mt-2">
+            Leave &quot;Ends On&quot; empty for a discount that never expires. Max 90%.
+          </p>
 
           {/* ---- IMAGES ---- */}
           <SectionLabel>Book Images</SectionLabel>
@@ -384,18 +397,8 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
                 </>
               ) : (
                 <>
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   {isEditing ? "Update Book" : "Add Book"}
                 </>
@@ -408,8 +411,7 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
   );
 }
 
-// ---------- helpers ----------
-
+/* ---------- helpers ---------- */
 function SectionLabel({ children }) {
   return (
     <div className="flex items-center gap-2 pt-2">

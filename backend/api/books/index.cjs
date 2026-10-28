@@ -4,30 +4,13 @@ const { connectToDatabase } = require("../lib/db.cjs");
 const { getAdminFromRequest } = require("../lib/auth.cjs");
 const { setCors, handleOptions } = require("../lib/cors.cjs");
 
-// Sanitizer config — allow only safe tags & attributes
 const SANITIZE_OPTS = {
   allowedTags: [
-    "p",
-    "br",
-    "strong",
-    "em",
-    "u",
-    "s",
-    "h1",
-    "h2",
-    "h3",
-    "ul",
-    "ol",
-    "li",
-    "blockquote",
-    "code",
-    "pre",
-    "a",
-    "hr",
+    "p", "br", "strong", "em", "u", "s",
+    "h1", "h2", "h3", "ul", "ol", "li",
+    "blockquote", "code", "pre", "a", "hr",
   ],
-  allowedAttributes: {
-    a: ["href", "target", "rel"],
-  },
+  allowedAttributes: { a: ["href", "target", "rel"] },
   allowedSchemes: ["http", "https", "mailto", "tel"],
   transformTags: {
     a: sanitizeHtml.simpleTransform("a", {
@@ -47,21 +30,17 @@ module.exports = async function handler(req, res) {
   setCors(req, res);
 
   const decoded = getAdminFromRequest(req);
-  if (!decoded) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
+  if (!decoded) return res.status(401).json({ message: "Unauthorized" });
 
   const { db } = await connectToDatabase();
   const books = db.collection("books");
 
   try {
-    // ---------- GET ALL ----------
     if (req.method === "GET") {
       const list = await books.find({}).sort({ createdAt: -1 }).toArray();
       return res.status(200).json(list);
     }
 
-    // ---------- CREATE ----------
     if (req.method === "POST") {
       const {
         title,
@@ -75,7 +54,9 @@ module.exports = async function handler(req, res) {
         edition,
         language,
         colorFormat,
-        description, // rich HTML
+        description,
+        discountPercent,
+        discountEndsAt,
       } = req.body || {};
 
       if (!title || !author) {
@@ -92,12 +73,20 @@ module.exports = async function handler(req, res) {
         stock: Number(stock) || 0,
         category: category || "General",
 
-        // 🆕 new fields
         publishedYear: publishedYear ? Number(publishedYear) : null,
         edition: edition ? String(edition).trim() : "",
         language: language ? String(language).trim() : "",
         colorFormat: colorFormat ? String(colorFormat).trim() : "",
         description: cleanDescription(description),
+
+        // 💡 per-book discount
+        discountPercent: Math.max(
+          0,
+          Math.min(90, Number(discountPercent) || 0)
+        ),
+        discountEndsAt: discountEndsAt
+          ? new Date(discountEndsAt)
+          : null,
 
         images: Array.isArray(images)
           ? images.slice(0, 3).map((img) => ({

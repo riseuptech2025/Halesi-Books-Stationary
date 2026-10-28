@@ -2,6 +2,7 @@
 const { ObjectId } = require("mongodb");
 const { connectToDatabase } = require("../../lib/db.cjs");
 const { setCors, handleOptions } = require("../../lib/cors.cjs");
+const { withActiveOffers } = require("../../lib/discount.cjs");
 
 module.exports = async function handler(req, res) {
   if (handleOptions(req, res)) return;
@@ -30,13 +31,14 @@ module.exports = async function handler(req, res) {
           images: 1,
           createdAt: 1,
           stock: 1,
-
-          // 🆕 all new fields — including description
           publishedYear: 1,
           edition: 1,
           language: 1,
           colorFormat: 1,
           description: 1,
+          // 💡 needed by the discount helper
+          discountPercent: 1,
+          discountEndsAt: 1,
         },
       }
     );
@@ -45,16 +47,8 @@ module.exports = async function handler(req, res) {
       return res.status(404).json({ message: "Book not found" });
     }
 
-    console.log(
-      "📖 Serving book:",
-      book.title,
-      "| has description:",
-      !!book.description,
-      "| length:",
-      (book.description || "").length
-    );
-
-    return res.status(200).json(book);
+    const priced = await withActiveOffers(db, book);
+    return res.status(200).json(priced);
   } catch (err) {
     console.error("Public book [id] error:", err);
     return res.status(500).json({ message: "Internal server error" });

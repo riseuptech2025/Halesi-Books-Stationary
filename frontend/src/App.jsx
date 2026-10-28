@@ -16,6 +16,8 @@ import AdminAnnouncements from "./pages/AdminAnnouncements";
 import AdminAnnouncementEditor from "./pages/AdminAnnouncementEditor";
 import AdminMaterials from "./pages/AdminMaterials";
 import AdminMaterialEditor from "./pages/AdminMaterialEditor";
+import Offers from "./pages/Offers";
+import OfferEditor from "./pages/OfferEditor";
 
 export default function App() {
   return (
@@ -105,6 +107,9 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/offers" element={<ProtectedRoute><Offers /></ProtectedRoute>} />
+<Route path="/offers/new" element={<ProtectedRoute><OfferEditor /></ProtectedRoute>} />
+<Route path="/offers/:id/edit" element={<ProtectedRoute><OfferEditor /></ProtectedRoute>} />
           <Route
             path="/settings"
             element={
