@@ -5,13 +5,15 @@ import BookFormModal from "../components/BookFormModal";
 import api from "../utils/api";
 
 const CATEGORIES = [
-  "General",
-  "Academic",
-  "Literature",
-  "Religion",
-  "Children",
-  "Competitive",
-  "Reference",
+  "General Books",
+  "Academic Books",
+  "Literature Books",
+  "Religion Books",
+  "Children Books",
+  "Loksewa Books",
+  "Reference Books",
+  "Entrance Books",
+  "License Books",
 ];
 
 export default function Books() {
