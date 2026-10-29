@@ -2,7 +2,18 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Layout from "../components/Layout";
+import BookFormModal from "../components/BookFormModal";
 import api from "../utils/api";
+
+const CATEGORIES = [
+  "General",
+  "Academic",
+  "Literature",
+  "Religion",
+  "Children",
+  "Competitive",
+  "Reference",
+];
 
 export default function BackEditions() {
   const [books, setBooks] = useState([]);
@@ -10,6 +21,9 @@ export default function BackEditions() {
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [busy, setBusy] = useState(null);
+
+  const [showModal, setShowModal] = useState(false);
+  const [editingBook, setEditingBook] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -28,17 +42,63 @@ export default function BackEditions() {
     load();
   }, []);
 
+  const handleSave = async (formData) => {
+    // 💡 The modal sends isBackEdition: true when opened from this page.
+    if (editingBook) {
+      const { data } = await api.put(`/books/${editingBook._id}`, formData);
+      setBooks((prev) =>
+        prev.map((b) => (b._id === editingBook._id ? data : b))
+      );
+      return data;
+    } else {
+      const { data } = await api.post("/books", formData);
+      setBooks((prev) => [data, ...prev]);
+      return data;
+    }
+  };
+
+  const remove = async (id) => {
+    if (!confirm("Delete this back-edition book permanently?")) return;
+    setBusy(id);
+    try {
+      await api.delete(`/books/${id}`);
+      setBooks((prev) => prev.filter((b) => b._id !== id));
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to delete");
+    } finally {
+      setBusy(null);
+    }
+  };
+
   const unflag = async (id) => {
-    if (!confirm("Remove this book from Back Editions?")) return;
+    if (
+      !confirm(
+        "Move this book back to the main catalogue? It will lose its back-edition status."
+      )
+    )
+      return;
     setBusy(id);
     try {
       await api.put(`/books/${id}`, { isBackEdition: false });
       setBooks((prev) => prev.filter((b) => b._id !== id));
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to remove");
+      alert(err.response?.data?.message || "Failed to move");
     } finally {
       setBusy(null);
     }
+  };
+
+  const openAdd = () => {
+    setEditingBook(null);
+    setShowModal(true);
+  };
+  const openEdit = (book) => {
+    setEditingBook(book);
+    setShowModal(true);
+  };
+  const closeModal = () => {
+    setShowModal(false);
+    setEditingBook(null);
   };
 
   const filtered = books.filter((b) => {
@@ -54,8 +114,9 @@ export default function BackEditions() {
   return (
     <Layout
       title="Back Editions"
-      subtitle="Old stock with heavy offers — shown to customers as a clearance collection."
+      subtitle="Old stock with heavy offers — shown only in the Back Edition section, not in the main catalogue."
     >
+      {/* Toolbar */}
       <div className="bg-white rounded-2xl shadow-sm border-l-4 border-l-red-600 p-4 mb-6">
         <div className="flex flex-col md:flex-row md:items-center gap-3">
           <div className="flex-1 relative">
@@ -81,12 +142,25 @@ export default function BackEditions() {
             />
           </div>
 
-          <Link
-            to="/books"
+          <button
+            onClick={openAdd}
             className="flex items-center justify-center gap-2 bg-gradient-to-r from-red-700 to-red-600 hover:from-red-800 hover:to-red-700 text-white font-semibold py-2.5 px-5 rounded-xl shadow-lg shadow-red-500/30 transition"
           >
-            + Add from Books
-          </Link>
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Add Back Edition
+          </button>
         </div>
         <p className="mt-3 text-xs text-gray-500">
           {filtered.length} of {books.length} back-edition books
@@ -107,15 +181,15 @@ export default function BackEditions() {
             No back-edition books yet
           </p>
           <p className="text-sm text-gray-500 mt-1 mb-5">
-            Open any book from <strong>Books</strong> and tick
-            &quot;Back Edition&quot;.
+            Add your first clearance book, or open a book from the main
+            catalogue and tick &quot;Back Edition&quot;.
           </p>
-          <Link
-            to="/books"
+          <button
+            onClick={openAdd}
             className="inline-flex items-center gap-2 bg-gradient-to-r from-red-700 to-red-600 hover:from-red-800 hover:to-red-700 text-white font-semibold py-2.5 px-5 rounded-xl shadow-lg shadow-red-500/30 transition"
           >
-            Go to Books
-          </Link>
+            + Add Back Edition Book
+          </button>
         </div>
       ) : (
         <div className="space-y-3">
@@ -155,7 +229,14 @@ export default function BackEditions() {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-gray-900 truncate">{b.title}</h3>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-bold text-gray-900 truncate">
+                      {b.title}
+                    </h3>
+                    <span className="text-[10px] font-bold uppercase bg-red-100 text-red-700 px-2 py-0.5 rounded-full">
+                      Back Edition
+                    </span>
+                  </div>
                   <p className="text-sm text-gray-500">by {b.author}</p>
                   {b.backEditionNote && (
                     <p className="text-xs text-red-700 font-semibold mt-1">
@@ -187,24 +268,41 @@ export default function BackEditions() {
                 </div>
 
                 <div className="flex flex-col gap-2 flex-shrink-0">
-                  <Link
-                    to="/books"
-                    className="px-3 py-2 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 border border-green-200 text-xs font-semibold transition text-center"
+                  <button
+                    onClick={() => openEdit(b)}
+                    className="px-3 py-2 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 border border-green-200 text-xs font-semibold transition"
                   >
-                    Edit Price/Discount
-                  </Link>
+                    Edit
+                  </button>
                   <button
                     onClick={() => unflag(b._id)}
                     disabled={busy === b._id}
+                    className="px-3 py-2 rounded-lg bg-yellow-50 text-yellow-800 hover:bg-yellow-100 border border-yellow-200 text-xs font-semibold transition disabled:opacity-60"
+                  >
+                    Move to Books
+                  </button>
+                  <button
+                    onClick={() => remove(b._id)}
+                    disabled={busy === b._id}
                     className="px-3 py-2 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 text-xs font-semibold transition disabled:opacity-60"
                   >
-                    {busy === b._id ? "..." : "Remove from Back Edition"}
+                    {busy === b._id ? "..." : "Delete"}
                   </button>
                 </div>
               </div>
             );
           })}
         </div>
+      )}
+
+      {showModal && (
+        <BookFormModal
+          book={editingBook}
+          categories={CATEGORIES}
+          onSave={handleSave}
+          onClose={closeModal}
+          forceBackEdition
+        />
       )}
     </Layout>
   );

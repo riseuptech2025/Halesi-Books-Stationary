@@ -25,12 +25,19 @@ const emptyForm = {
 const LANGUAGES = ["English", "Nepali", "Hindi", "Sanskrit", "Tibetan", "Other"];
 const FORMATS = ["Paperback", "Hardcover", "E-Book", "Audiobook", "Spiral", "Other"];
 
-export default function BookFormModal({ book, categories, onSave, onClose }) {
+export default function BookFormModal({
+  book,
+  categories,
+  onSave,
+  onClose,
+  forceBackEdition = false, // 👈 new prop
+}) {
   const [form, setForm] = useState({ ...emptyForm });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   const isEditing = !!book;
+  const effectiveIsBackEdition = forceBackEdition || form.isBackEdition;
 
   useEffect(() => {
     if (book) {
@@ -51,13 +58,17 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
         discountEndsAt: book.discountEndsAt
           ? new Date(book.discountEndsAt).toISOString().slice(0, 10)
           : "",
-        isBackEdition: !!book.isBackEdition,
+        isBackEdition: forceBackEdition ? true : !!book.isBackEdition,
         backEditionNote: book.backEditionNote || "",
       });
     } else {
-      setForm({ ...emptyForm });
+      setForm({
+        ...emptyForm,
+        isBackEdition: forceBackEdition ? true : false,
+      });
     }
-  }, [book]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [book, forceBackEdition]);
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -114,7 +125,8 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
         discountEndsAt: form.discountEndsAt
           ? new Date(form.discountEndsAt).toISOString()
           : null,
-        isBackEdition: !!form.isBackEdition,
+        // 💡 force true when coming from the Back Editions page
+        isBackEdition: forceBackEdition ? true : !!form.isBackEdition,
         backEditionNote: form.backEditionNote.trim(),
       });
       onClose();
@@ -128,7 +140,7 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
   };
 
   const needsDiscountHint =
-    form.isBackEdition &&
+    effectiveIsBackEdition &&
     (!form.discountPercent || Number(form.discountPercent) === 0);
 
   return (
@@ -161,10 +173,16 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
             </div>
             <div>
               <h2 className="text-lg font-bold text-gray-900">
-                {isEditing ? "Edit Book" : "Add New Book"}
+                {isEditing
+                  ? "Edit Back Edition Book"
+                  : forceBackEdition
+                  ? "Add Back Edition Book"
+                  : "Add New Book"}
               </h2>
               <p className="text-xs text-gray-500">
-                {isEditing
+                {forceBackEdition
+                  ? "Will appear only in the Back Editions section."
+                  : isEditing
                   ? "Update the book details below."
                   : "Fill in the book details below."}
               </p>
@@ -392,43 +410,64 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
           </p>
 
           {/* ---- BACK EDITION ---- */}
-          <SectionLabel>Back Edition</SectionLabel>
-
-          <label className="flex items-start gap-3 p-4 rounded-xl border-2 border-yellow-300 bg-yellow-50/50 cursor-pointer hover:bg-yellow-50 transition">
-            <input
-              type="checkbox"
-              checked={form.isBackEdition}
-              onChange={(e) =>
-                setForm((prev) => ({
-                  ...prev,
-                  isBackEdition: e.target.checked,
-                }))
-              }
-              className="mt-0.5 w-4 h-4 rounded text-red-600 focus:ring-red-500"
-            />
-            <div className="flex-1">
-              <p className="text-sm font-bold text-gray-800">
-                Mark as Back Edition / Clearance
+          {forceBackEdition ? (
+            <>
+              <SectionLabel>Back Edition Note</SectionLabel>
+              <Field label="Note (optional)" accent="yellow">
+                <input
+                  type="text"
+                  name="backEditionNote"
+                  value={form.backEditionNote}
+                  onChange={handleChange}
+                  placeholder="e.g. 2018 edition · minor wear on cover"
+                  maxLength={200}
+                  className="input-base border-red-focus"
+                />
+              </Field>
+              <p className="text-[11px] text-gray-400 -mt-2">
+                This book will be saved as a Back Edition and shown only in
+                that section.
               </p>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Old stock shown in the &quot;Back Edition&quot; section with
-                big offers.
-              </p>
-            </div>
-          </label>
+            </>
+          ) : (
+            <>
+              <SectionLabel>Back Edition</SectionLabel>
+              <label className="flex items-start gap-3 p-4 rounded-xl border-2 border-yellow-300 bg-yellow-50/50 cursor-pointer hover:bg-yellow-50 transition">
+                <input
+                  type="checkbox"
+                  checked={form.isBackEdition}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      isBackEdition: e.target.checked,
+                    }))
+                  }
+                  className="mt-0.5 w-4 h-4 rounded text-red-600 focus:ring-red-500"
+                />
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-gray-800">
+                    Mark as Back Edition / Clearance
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Old stock shown only in the Back Edition section.
+                  </p>
+                </div>
+              </label>
 
-          {form.isBackEdition && (
-            <Field label="Back Edition Note (optional)" accent="yellow">
-              <input
-                type="text"
-                name="backEditionNote"
-                value={form.backEditionNote}
-                onChange={handleChange}
-                placeholder="e.g. 2018 edition · minor wear on cover"
-                maxLength={200}
-                className="input-base border-red-focus"
-              />
-            </Field>
+              {form.isBackEdition && (
+                <Field label="Back Edition Note (optional)" accent="yellow">
+                  <input
+                    type="text"
+                    name="backEditionNote"
+                    value={form.backEditionNote}
+                    onChange={handleChange}
+                    placeholder="e.g. 2018 edition · minor wear on cover"
+                    maxLength={200}
+                    className="input-base border-red-focus"
+                  />
+                </Field>
+              )}
+            </>
           )}
 
           {needsDiscountHint && (

@@ -17,7 +17,9 @@ module.exports = async function handler(req, res) {
 
     const { search, category, sort } = req.query || {};
 
-    const filter = {};
+    // 💡 Back editions never appear in the main public catalogue
+    const filter = { isBackEdition: { $ne: true } };
+
     if (category && category !== "All") filter.category = category;
     if (search) {
       const rx = new RegExp(String(search).trim(), "i");
@@ -41,9 +43,9 @@ module.exports = async function handler(req, res) {
           images: 1,
           createdAt: 1,
           stock: 1,
-          // 💡 needed by the discount helper
           discountPercent: 1,
           discountEndsAt: 1,
+          isBackEdition: 1,
         },
       })
       .sort(sortOption)

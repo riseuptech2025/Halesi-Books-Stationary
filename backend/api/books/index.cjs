@@ -37,7 +37,12 @@ module.exports = async function handler(req, res) {
 
   try {
     if (req.method === "GET") {
-      const list = await books.find({}).sort({ createdAt: -1 }).toArray();
+      // 💡 Admin book list ALSO excludes back editions —
+      // those are managed in the Back Editions page.
+      const list = await books
+        .find({ isBackEdition: { $ne: true } })
+        .sort({ createdAt: -1 })
+        .toArray();
       return res.status(200).json(list);
     }
 
@@ -81,7 +86,6 @@ module.exports = async function handler(req, res) {
         colorFormat: colorFormat ? String(colorFormat).trim() : "",
         description: cleanDescription(description),
 
-        // 💡 per-book discount
         discountPercent: Math.max(
           0,
           Math.min(90, Number(discountPercent) || 0)
@@ -90,7 +94,6 @@ module.exports = async function handler(req, res) {
           ? new Date(discountEndsAt)
           : null,
 
-        // 💡 Back Edition / clearance
         isBackEdition: !!isBackEdition,
         backEditionNote: backEditionNote
           ? String(backEditionNote).trim().slice(0, 200)
