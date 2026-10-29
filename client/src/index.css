@@ -1,1 +1,6 @@
 @import "tailwindcss";
+
+
+@utility container-x {
+  @apply w-[95%] mx-auto px-2 sm:px-6 lg:px-8;
+}

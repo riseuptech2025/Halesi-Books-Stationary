@@ -130,8 +130,8 @@ export default function BookDetail() {
       <div className="container-x py-10 animate-pulse">
         <div className="h-4 bg-gray-100 rounded w-56 mb-8" />
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-          <div className="lg:col-span-6">
-            <div className="aspect-[3/4] bg-gray-100 rounded-3xl" />
+          <div className="lg:col-span-6 px-2 sm:px-4">
+            <div className="max-w-md mx-auto aspect-[5/7] bg-gray-100 rounded-3xl" />
           </div>
           <div className="lg:col-span-6 space-y-4">
             <div className="h-8 bg-gray-100 rounded w-3/4" />
@@ -181,7 +181,6 @@ export default function BookDetail() {
   const originalPrice = hasDiscount
     ? Number(book.originalPrice)
     : Number(book.price);
-  const savings = originalPrice - unitPrice;
 
   const stockInfo = (() => {
     if (book.stock === 0)
@@ -245,8 +244,9 @@ export default function BookDetail() {
       <div className="container-x py-8 md:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
           {/* ============ LEFT: IMAGES (STICKY) ============ */}
-          <div className="lg:col-span-6 lg:sticky lg:top-24 lg:self-start">
-            <div className="relative bg-gradient-to-br from-red-50 via-yellow-50 to-green-50 rounded-3xl border-4 border-yellow-400 overflow-hidden aspect-[3/4] shadow-xl">
+          <div className="lg:col-span-6 lg:sticky lg:top-24 lg:self-start px-2 sm:px-4 mb-8 lg:mb-0">
+            {/* 💡 Shorter 5:7 image, capped width, centered */}
+            <div className="relative max-w-md mx-auto bg-gradient-to-br from-red-50 via-yellow-50 to-green-50 rounded-3xl border-4 border-yellow-400 overflow-hidden aspect-[5/7] shadow-xl">
               {mainImage ? (
                 <img
                   src={mainImage}
@@ -255,9 +255,9 @@ export default function BookDetail() {
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <div className="w-32 h-40 bg-white rounded-xl shadow-xl flex items-center justify-center border-2 border-red-200">
+                  <div className="w-24 h-32 bg-white rounded-xl shadow-xl flex items-center justify-center border-2 border-red-200">
                     <svg
-                      className="w-16 h-16 text-red-600"
+                      className="w-14 h-14 text-red-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -279,15 +279,15 @@ export default function BookDetail() {
 
               {/* 💡 Discount ribbon */}
               {hasDiscount && (
-                <div className="absolute top-4 right-16 bg-red-600 text-white text-sm font-extrabold uppercase tracking-wider px-3 py-1.5 rounded-full shadow-lg animate-pulse">
+                <div className="absolute top-4 right-14 bg-red-600 text-white text-sm font-extrabold uppercase tracking-wider px-3 py-1.5 rounded-full shadow-lg animate-pulse">
                   -{book.discountPercent}% OFF
                 </div>
               )}
 
               {hasMultipleImages && (
-                <div className="absolute top-4 right-4 bg-black/70 backdrop-blur text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                <div className="absolute top-4 right-4 bg-black/70 backdrop-blur text-white text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1">
                   <svg
-                    className="w-3.5 h-3.5"
+                    className="w-3 h-3"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -299,13 +299,13 @@ export default function BookDetail() {
                       d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                     />
                   </svg>
-                  {activeImage + 1} / {images.length}
+                  {activeImage + 1}/{images.length}
                 </div>
               )}
             </div>
 
             {hasMultipleImages && (
-              <div className="mt-4 grid grid-cols-4 gap-3">
+              <div className="mt-4 max-w-md mx-auto grid grid-cols-4 gap-2">
                 {images.map((img, i) => (
                   <button
                     key={img.publicId || i}
@@ -327,7 +327,7 @@ export default function BookDetail() {
             )}
 
             {/* Share row */}
-            <div className="mt-6 flex items-center gap-2 flex-wrap">
+            <div className="mt-6 max-w-md mx-auto flex items-center gap-2 flex-wrap">
               <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide mr-1">
                 Share
               </span>
