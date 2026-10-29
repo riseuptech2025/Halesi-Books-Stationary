@@ -19,6 +19,7 @@ import AdminMaterials from "./pages/AdminMaterials";
 import AdminMaterialEditor from "./pages/AdminMaterialEditor";
 import Offers from "./pages/Offers";
 import OfferEditor from "./pages/OfferEditor";
+import Messages from "./pages/Messages";
 
 export default function App() {
   return (
@@ -36,6 +37,14 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+  path="/messages"
+  element={
+    <ProtectedRoute>
+      <Messages />
+    </ProtectedRoute>
+  }
+/>
           <Route
   path="/back-editions"
   element={

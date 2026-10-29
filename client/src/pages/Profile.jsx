@@ -12,6 +12,7 @@ const TABS = [
   { id: "cart", label: "My Cart", icon: "M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" },
   { id: "wishlist", label: "Wishlist", icon: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" },
   { id: "addresses", label: "Addresses", icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z" },
+  { id: "messages", label: "Messages", icon: "M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" },
   { id: "profile", label: "Profile", icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" },
   { id: "security", label: "Security", icon: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" },
 ];
@@ -196,6 +197,7 @@ export default function Profile() {
                 {activeTab === "addresses" && (
                   <AddressesTab addresses={addresses} onRefresh={fetchData} showToast={showToast} />
                 )}
+                {activeTab === "messages" && <MessagesTab />}
                 {activeTab === "profile" && (
                   <ProfileInfoTab profile={profile} onRefresh={fetchData} showToast={showToast} />
                 )}
@@ -515,7 +517,6 @@ function OrdersTab({ orders, onRefresh, showToast }) {
                           <p className="text-sm font-semibold text-gray-800 truncate">{item.title}</p>
                           <p className="text-xs text-gray-500 truncate">by {item.author}</p>
                         </div>
-                        {/* 💡 Discount-aware price block */}
                         <div className="text-right flex-shrink-0">
                           <p className="text-xs text-gray-500">
                             {item.quantity} × NPR {Number(item.price).toLocaleString()}
@@ -645,7 +646,6 @@ function CartTab({ items, total, onRefresh, showToast }) {
                 {item.title}
               </Link>
               <p className="text-xs text-gray-500 mt-0.5">by {item.author}</p>
-              {/* 💡 Discount-aware price block */}
               <div className="mt-1">
                 {item.discountPercent > 0 && (
                   <p className="text-xs line-through text-gray-400">
@@ -906,6 +906,184 @@ function AddressesTab({ addresses, onRefresh, showToast }) {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+// =================== MESSAGES ===================
+function MessagesTab() {
+  const [threads, setThreads] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [expanded, setExpanded] = useState(null);
+  const [detail, setDetail] = useState(null);
+  const [replyText, setReplyText] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const { data } = await api.get("/user/messages");
+      setThreads(data);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to load messages.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const openThread = (t) => {
+    if (expanded === t._id) {
+      setExpanded(null);
+      setDetail(null);
+      return;
+    }
+    setExpanded(t._id);
+    setDetail(t);
+    setReplyText("");
+  };
+
+  const sendFollowup = async () => {
+    if (!detail || !replyText.trim()) return;
+    setSending(true);
+    try {
+      const { data } = await api.post("/user/messages", {
+        threadId: detail._id,
+        text: replyText.trim(),
+      });
+      setDetail(data);
+      setThreads((prev) => prev.map((t) => (t._id === data._id ? data : t)));
+      setReplyText("");
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to send message");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (loading) return <LoadingCard />;
+  if (error) {
+    return (
+      <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-lg text-sm">
+        {error}
+      </div>
+    );
+  }
+
+  if (threads.length === 0) {
+    return (
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12">
+        <EmptyState
+          icon="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+          title="No messages yet"
+          desc="Messages you send from the Contact page will appear here, along with replies from our team."
+          cta={{ to: "/contact", label: "Contact Us" }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-2xl font-extrabold text-gray-900">Messages</h2>
+      <p className="text-sm text-gray-500">
+        Your conversations with Halesi Books Centre
+      </p>
+
+      {threads.map((t) => {
+        const isOpen = expanded === t._id;
+        const adminReplies = t.thread.filter((x) => x.from === "admin").length;
+        return (
+          <div key={t._id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <button
+              onClick={() => openThread(t)}
+              className="w-full p-4 flex items-start gap-3 hover:bg-gray-50 transition text-left"
+            >
+              <div className="w-10 h-10 rounded-full bg-red-100 text-red-700 flex items-center justify-center font-bold flex-shrink-0">
+                {(t.subject || "M").charAt(0).toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-gray-900 truncate">{t.subject}</p>
+                <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">
+                  {t.thread[t.thread.length - 1]?.text || t.message}
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  {new Date(t.updatedAt).toLocaleString("en-GB")}
+                  {adminReplies > 0 && (
+                    <span className="ml-2 text-green-600 font-semibold">
+                      · {adminReplies} admin repl{adminReplies === 1 ? "y" : "ies"}
+                    </span>
+                  )}
+                </p>
+              </div>
+              <span
+                className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                  t.status === "replied"
+                    ? "bg-green-100 text-green-700"
+                    : t.status === "new"
+                    ? "bg-red-100 text-red-700"
+                    : "bg-yellow-100 text-yellow-800"
+                }`}
+              >
+                {t.status}
+              </span>
+              <svg
+                className={`w-4 h-4 text-gray-400 flex-shrink-0 transition ${isOpen ? "rotate-180" : ""}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {isOpen && detail && (
+              <div className="border-t border-gray-100 bg-gray-50 p-4 space-y-3">
+                {detail.thread.map((m, i) => (
+                  <div key={i} className={`flex ${m.from === "admin" ? "justify-start" : "justify-end"}`}>
+                    <div
+                      className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
+                        m.from === "admin"
+                          ? "bg-white border border-gray-200 text-gray-800"
+                          : "bg-red-600 text-white"
+                      }`}
+                    >
+                      <p className="text-[10px] font-bold uppercase tracking-wide opacity-70 mb-1">
+                        {m.from === "admin" ? m.adminName || "Halesi Books" : "You"}
+                      </p>
+                      <p className="text-sm whitespace-pre-wrap">{m.text}</p>
+                      <p className="text-[10px] opacity-60 mt-1">
+                        {new Date(m.at).toLocaleString("en-GB")}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+
+                <div className="bg-white rounded-xl border-2 border-yellow-300 p-3">
+                  <textarea
+                    rows={2}
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    placeholder="Type a follow-up message..."
+                    className="w-full px-3 py-2 rounded-lg border-2 border-gray-200 text-sm focus:outline-none focus:border-red-500 resize-none"
+                  />
+                  <button
+                    onClick={sendFollowup}
+                    disabled={sending || !replyText.trim()}
+                    className="mt-2 w-full bg-gradient-to-r from-red-700 to-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md transition disabled:opacity-60"
+                  >
+                    {sending ? "Sending..." : "Send"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

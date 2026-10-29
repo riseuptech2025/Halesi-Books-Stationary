@@ -5,6 +5,7 @@ const { getUserFromRequest } = require("../lib/auth.cjs");
 const { setCors, handleOptions } = require("../lib/cors.cjs");
 const { getSettings } = require("../lib/settings.cjs");
 const { withActiveOffers } = require("../lib/discount.cjs");
+const { sendOrderNotificationToAdmin } = require("../lib/mailer.cjs");
 
 module.exports = async function handler(req, res) {
   if (handleOptions(req, res)) return;
@@ -113,7 +114,6 @@ module.exports = async function handler(req, res) {
               images: 1,
               stock: 1,
               category: 1,
-              // 💡 needed by the discount helper
               discountPercent: 1,
               discountEndsAt: 1,
             },
@@ -121,7 +121,6 @@ module.exports = async function handler(req, res) {
         )
         .toArray();
 
-      // 💡 Apply discount
       const pricedBooks = await withActiveOffers(db, bookDocs);
       const byId = new Map(pricedBooks.map((b) => [b._id.toString(), b]));
 
@@ -149,8 +148,8 @@ module.exports = async function handler(req, res) {
           bookId: i.bookId,
           title: b.title,
           author: b.author,
-          price: b.finalPrice, // discounted price
-          originalPrice: b.originalPrice, // for receipts
+          price: b.finalPrice,
+          originalPrice: b.originalPrice,
           discountPercent: b.discountPercent || 0,
           image: b.images?.[0]?.url || null,
           quantity: Number(i.quantity) || 1,
@@ -227,6 +226,36 @@ module.exports = async function handler(req, res) {
           { userId: decoded.id },
           { $set: { items: [], updatedAt: new Date() } }
         );
+
+      // 💡 Fire-and-forget admin notification — never blocks the response
+      try {
+        const user = await db
+          .collection("users")
+          .findOne(
+            { _id: new ObjectId(decoded.id) },
+            { projection: { email: 1, name: 1 } }
+          );
+
+        sendOrderNotificationToAdmin({
+          orderNumber: doc.orderNumber,
+          customerName: doc.shippingAddress.name,
+          customerPhone: doc.shippingAddress.phone,
+          customerEmail: user?.email || "",
+          shippingAddress: doc.shippingAddress.address,
+          city: doc.shippingAddress.city,
+          paymentMethod: doc.paymentMethod,
+          paymentStatus: doc.paymentStatus,
+          items: doc.items,
+          subtotal: doc.subtotal,
+          deliveryFee: doc.deliveryFee,
+          deliveryZoneName: doc.deliveryZone?.name || null,
+          total: doc.total,
+          notes: doc.notes,
+          createdAt: doc.createdAt,
+        }).catch((e) => console.error("Order notify email failed:", e));
+      } catch (e) {
+        console.error("Order notify error:", e);
+      }
 
       return res.status(201).json({ _id: result.insertedId, ...doc });
     }

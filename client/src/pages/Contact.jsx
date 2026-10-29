@@ -1,20 +1,45 @@
 // client/src/pages/Contact.jsx
 import { useState } from "react";
+import api from "../utils/api";
+import { useAuth } from "../context/AuthContext";
 
 export default function Contact() {
+  const { user } = useAuth();
+
   const [form, setForm] = useState({
-    name: "",
-    email: "",
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    subject: "General enquiry",
     message: "",
   });
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+  const [sending, setSending] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simple UI demo — hook this up to an actual email service later
-    setSent(true);
-    setTimeout(() => setSent(false), 5000);
-    setForm({ name: "", email: "", message: "" });
+    setError("");
+    setSending(true);
+    try {
+      await api.post("/contact", form);
+      setSent(true);
+      setTimeout(() => setSent(false), 8000);
+      setForm({
+        name: user?.name || "",
+        email: user?.email || "",
+        phone: user?.phone || "",
+        subject: "General enquiry",
+        message: "",
+      });
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          "Failed to send message. Please try again."
+      );
+    } finally {
+      setSending(false);
+    }
   };
 
   const handleChange = (e) =>
@@ -190,9 +215,8 @@ export default function Contact() {
         </div>
       </div>
 
-      {/* Social media + Map */}
+      {/* Social + Map */}
       <div className="max-w-5xl mx-auto mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Social links */}
         <div className="bg-white rounded-2xl shadow-md p-6 md:p-8 border-t-4 border-t-blue-500">
           <h2 className="text-xl font-bold text-gray-900 mb-1">
             Connect with us
@@ -224,7 +248,6 @@ export default function Contact() {
           </div>
         </div>
 
-        {/* Map */}
         <div className="bg-white rounded-2xl shadow-md p-6 md:p-8 border-t-4 border-t-red-600">
           <h2 className="text-xl font-bold text-gray-900 mb-1">Find us</h2>
           <p className="text-sm text-gray-500 mb-4">
@@ -275,14 +298,24 @@ export default function Contact() {
                 clipRule="evenodd"
               />
             </svg>
-            <span>Thank you! Your message has been sent.</span>
+            <span>
+              Thank you! Your message has been sent. Our team will reply to
+              your email soon — you can also see the reply in your{" "}
+              <strong>Profile → Messages</strong>.
+            </span>
+          </div>
+        )}
+
+        {error && (
+          <div className="mb-5 flex items-start gap-2 bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-lg text-sm">
+            <span>{error}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-              Your Name
+              Your Name *
             </label>
             <input
               type="text"
@@ -296,7 +329,7 @@ export default function Contact() {
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-              Email
+              Email *
             </label>
             <input
               type="email"
@@ -310,7 +343,35 @@ export default function Contact() {
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-              Message
+              Phone (optional)
+            </label>
+            <input
+              type="tel"
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              placeholder="+977-98XXXXXXXX"
+              className="w-full px-4 py-2.5 rounded-xl border-2 border-yellow-300 bg-yellow-50/50 text-gray-800 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200 focus:bg-white transition"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Subject
+            </label>
+            <input
+              type="text"
+              name="subject"
+              value={form.subject}
+              onChange={handleChange}
+              placeholder="e.g. Book availability"
+              className="w-full px-4 py-2.5 rounded-xl border-2 border-yellow-300 bg-yellow-50/50 text-gray-800 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200 focus:bg-white transition"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Message *
             </label>
             <textarea
               name="message"
@@ -318,28 +379,39 @@ export default function Contact() {
               rows={5}
               value={form.message}
               onChange={handleChange}
+              placeholder="Tell us what you're looking for..."
               className="w-full px-4 py-2.5 rounded-xl border-2 border-yellow-300 bg-yellow-50/50 text-gray-800 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200 focus:bg-white transition resize-none"
             />
           </div>
 
           <button
             type="submit"
-            className="btn-primary w-full flex items-center justify-center gap-2"
+            disabled={sending}
+            className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-60"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-              />
-            </svg>
-            Send Message
+            {sending ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                Sending...
+              </>
+            ) : (
+              <>
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                  />
+                </svg>
+                Send Message
+              </>
+            )}
           </button>
         </form>
       </div>

@@ -207,6 +207,17 @@ app.all("/api/admin/settings", adapt(require("./api/admin/settings.cjs")));
 
 // QR UPLOAD
 app.all("/api/upload/qr-sign", adapt(require("./api/upload/qr-sign.cjs")));
+
+// CONTACT
+app.all("/api/contact", adapt(require("./api/contact/index.cjs")));
+
+// USER — messages
+app.all("/api/user/messages", adapt(require("./api/user/messages.cjs")));
+
+// ADMIN — messages
+app.all("/api/admin/messages", adapt(require("./api/admin/messages/index.cjs")));
+app.all("/api/admin/messages/:id", adapt(require("./api/admin/messages/[id].cjs")));
+
 // Health
 app.get("/", (_req, res) =>
   res.json({ ok: true, service: "Halesi Books API" })
