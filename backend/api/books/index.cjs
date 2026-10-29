@@ -57,6 +57,8 @@ module.exports = async function handler(req, res) {
         description,
         discountPercent,
         discountEndsAt,
+        isBackEdition,
+        backEditionNote,
       } = req.body || {};
 
       if (!title || !author) {
@@ -87,6 +89,12 @@ module.exports = async function handler(req, res) {
         discountEndsAt: discountEndsAt
           ? new Date(discountEndsAt)
           : null,
+
+        // 💡 Back Edition / clearance
+        isBackEdition: !!isBackEdition,
+        backEditionNote: backEditionNote
+          ? String(backEditionNote).trim().slice(0, 200)
+          : "",
 
         images: Array.isArray(images)
           ? images.slice(0, 3).map((img) => ({

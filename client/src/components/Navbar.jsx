@@ -39,6 +39,7 @@ export default function Navbar() {
         { to: "/materials/all", label: "All" },
       ],
     },
+    { to: "/back-editions", label: "Back Edition" },
     { to: "/blog", label: "Blog" },
     { to: "/contact", label: "Contact" },
   ];
@@ -100,25 +101,40 @@ export default function Navbar() {
         {/* ============= DESKTOP NAV ============= */}
         <nav className="hidden md:flex items-center gap-1">
           {links.map((l) =>
-            l.children ? (
-              <NavDropdown key={l.label} item={l} />
-            ) : (
-              <NavLink
-                key={l.to}
-                to={l.to}
-                end={l.to === "/"}
-                className={({ isActive }) =>
-                  `px-4 py-2 rounded-lg text-sm font-semibold transition ${
-                    isActive
-                      ? "bg-red-50 text-red-700"
-                      : "text-gray-700 hover:bg-gray-50 hover:text-red-700"
-                  }`
-                }
-              >
-                {l.label}
-              </NavLink>
-            )
-          )}
+  l.children ? (
+    <NavDropdown key={l.label} item={l} />
+  ) : l.to === "/back-editions" ? (
+    <NavLink
+      key={l.to}
+      to={l.to}
+      className={({ isActive }) =>
+        `relative px-4 py-2 rounded-lg text-sm font-bold transition flex items-center gap-1 ${
+          isActive
+            ? "bg-red-600 text-white"
+            : "bg-red-50 text-red-700 hover:bg-red-100"
+        }`
+      }
+    >
+      <span className="text-[10px]">🔥</span>
+      {l.label}
+    </NavLink>
+  ) : (
+    <NavLink
+      key={l.to}
+      to={l.to}
+      end={l.to === "/"}
+      className={({ isActive }) =>
+        `px-4 py-2 rounded-lg text-sm font-semibold transition ${
+          isActive
+            ? "bg-red-50 text-red-700"
+            : "text-gray-700 hover:bg-gray-50 hover:text-red-700"
+        }`
+      }
+    >
+      {l.label}
+    </NavLink>
+  )
+)}
         </nav>
 
         {/* ============= RIGHT ACTIONS ============= */}

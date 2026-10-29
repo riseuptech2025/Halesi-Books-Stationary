@@ -18,6 +18,8 @@ const emptyForm = {
   description: "",
   discountPercent: "",
   discountEndsAt: "",
+  isBackEdition: false,
+  backEditionNote: "",
 };
 
 const LANGUAGES = ["English", "Nepali", "Hindi", "Sanskrit", "Tibetan", "Other"];
@@ -49,6 +51,8 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
         discountEndsAt: book.discountEndsAt
           ? new Date(book.discountEndsAt).toISOString().slice(0, 10)
           : "",
+        isBackEdition: !!book.isBackEdition,
+        backEditionNote: book.backEditionNote || "",
       });
     } else {
       setForm({ ...emptyForm });
@@ -110,6 +114,8 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
         discountEndsAt: form.discountEndsAt
           ? new Date(form.discountEndsAt).toISOString()
           : null,
+        isBackEdition: !!form.isBackEdition,
+        backEditionNote: form.backEditionNote.trim(),
       });
       onClose();
     } catch (err) {
@@ -121,6 +127,10 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
     }
   };
 
+  const needsDiscountHint =
+    form.isBackEdition &&
+    (!form.discountPercent || Number(form.discountPercent) === 0);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
       <div
@@ -131,7 +141,12 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -160,7 +175,12 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
             className="w-9 h-9 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-800 transition"
             aria-label="Close"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -175,7 +195,11 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           {error && (
             <div className="flex items-start gap-2 bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-lg text-sm">
-              <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <svg
+                className="w-5 h-5 flex-shrink-0 mt-0.5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
                 <path
                   fillRule="evenodd"
                   d="M18 10A8 8 0 11 2 10a8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
@@ -263,7 +287,9 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
               >
                 <option value="">Select...</option>
                 {LANGUAGES.map((l) => (
-                  <option key={l} value={l}>{l}</option>
+                  <option key={l} value={l}>
+                    {l}
+                  </option>
                 ))}
               </select>
             </Field>
@@ -277,7 +303,9 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
               >
                 <option value="">Select...</option>
                 {FORMATS.map((f) => (
-                  <option key={f} value={f}>{f}</option>
+                  <option key={f} value={f}>
+                    {f}
+                  </option>
                 ))}
               </select>
             </Field>
@@ -323,7 +351,9 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
                 className="input-base border-red-focus"
               >
                 {categories.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
               </select>
             </Field>
@@ -357,8 +387,55 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
             </Field>
           </div>
           <p className="text-[11px] text-gray-400 -mt-2">
-            Leave &quot;Ends On&quot; empty for a discount that never expires. Max 90%.
+            Leave &quot;Ends On&quot; empty for a discount that never expires.
+            Max 90%.
           </p>
+
+          {/* ---- BACK EDITION ---- */}
+          <SectionLabel>Back Edition</SectionLabel>
+
+          <label className="flex items-start gap-3 p-4 rounded-xl border-2 border-yellow-300 bg-yellow-50/50 cursor-pointer hover:bg-yellow-50 transition">
+            <input
+              type="checkbox"
+              checked={form.isBackEdition}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  isBackEdition: e.target.checked,
+                }))
+              }
+              className="mt-0.5 w-4 h-4 rounded text-red-600 focus:ring-red-500"
+            />
+            <div className="flex-1">
+              <p className="text-sm font-bold text-gray-800">
+                Mark as Back Edition / Clearance
+              </p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Old stock shown in the &quot;Back Edition&quot; section with
+                big offers.
+              </p>
+            </div>
+          </label>
+
+          {form.isBackEdition && (
+            <Field label="Back Edition Note (optional)" accent="yellow">
+              <input
+                type="text"
+                name="backEditionNote"
+                value={form.backEditionNote}
+                onChange={handleChange}
+                placeholder="e.g. 2018 edition · minor wear on cover"
+                maxLength={200}
+                className="input-base border-red-focus"
+              />
+            </Field>
+          )}
+
+          {needsDiscountHint && (
+            <p className="text-xs text-red-600 font-semibold -mt-2">
+              💡 Tip: Back editions look best with a discount. Set one above.
+            </p>
+          )}
 
           {/* ---- IMAGES ---- */}
           <SectionLabel>Book Images</SectionLabel>
@@ -372,7 +449,8 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
             placeholder="Write a detailed description — use headings, bullet points, links, and more."
           />
           <p className="text-[11px] text-gray-400 -mt-3">
-            Tip: use the toolbar for headings, bullet lists, links, quotes, and more.
+            Tip: use the toolbar for headings, bullet lists, links, quotes, and
+            more.
           </p>
 
           {/* ---- ACTIONS ---- */}
@@ -397,8 +475,18 @@ export default function BookFormModal({ book, categories, onSave, onClose }) {
                 </>
               ) : (
                 <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                   {isEditing ? "Update Book" : "Add Book"}
                 </>

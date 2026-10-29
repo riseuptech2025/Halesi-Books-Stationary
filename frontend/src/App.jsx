@@ -4,6 +4,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Welcome from "./pages/Welcome";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import BackEditions from "./pages/BackEditions";
 import Books from "./pages/Books";
 import Orders from "./pages/Orders";
 import Payments from "./pages/Payments";
@@ -35,6 +36,14 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+  path="/back-editions"
+  element={
+    <ProtectedRoute>
+      <BackEditions />
+    </ProtectedRoute>
+  }
+/>
           <Route
             path="/books"
             element={

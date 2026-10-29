@@ -39,6 +39,8 @@ module.exports = async function handler(req, res) {
         images,
         discountPercent,
         discountEndsAt,
+        isBackEdition,
+        backEditionNote,
       } = req.body || {};
 
       const existing = await books.findOne({ _id });
@@ -79,6 +81,14 @@ module.exports = async function handler(req, res) {
           discountEndsAt: discountEndsAt
             ? new Date(discountEndsAt)
             : null,
+        }),
+
+        // 💡 Back Edition / clearance
+        ...(isBackEdition !== undefined && {
+          isBackEdition: !!isBackEdition,
+        }),
+        ...(backEditionNote !== undefined && {
+          backEditionNote: String(backEditionNote || "").trim().slice(0, 200),
         }),
 
         updatedAt: new Date(),

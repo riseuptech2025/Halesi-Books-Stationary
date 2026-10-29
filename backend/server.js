@@ -177,6 +177,22 @@ app.all("/api/public/materials/:id", adapt(require("./api/public/materials/[id].
 app.all("/api/auth/signup-request", adapt(require("./api/auth/signup-request.cjs")));
 app.all("/api/auth/signup-verify", adapt(require("./api/auth/signup-verify.cjs")));
 
+// PUBLIC BACK EDITIONS
+app.all(
+  "/api/public/back-editions",
+  adapt(require("./api/public/back-editions/index.cjs"))
+);
+app.all(
+  "/api/public/back-editions/:id",
+  adapt(require("./api/public/back-editions/[id].cjs"))
+);
+
+// ADMIN BACK EDITIONS
+app.all(
+  "/api/admin/back-editions",
+  adapt(require("./api/admin/back-editions/index.cjs"))
+);
+
 // CONTENT UPLOAD
 app.all("/api/upload/content-sign", adapt(require("./api/upload/content-sign.cjs")));
 

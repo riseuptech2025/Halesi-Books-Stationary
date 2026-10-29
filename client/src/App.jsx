@@ -9,6 +9,7 @@ import Home from "./pages/Home";
 import BooksPage from "./pages/BooksPage";
 import BookDetail from "./pages/BookDetail";
 import About from "./pages/About";
+import BackEditions from "./pages/BackEditions";
 import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -43,6 +44,7 @@ export default function App() {
                   <Route path="/announcements" element={<AnnouncementList />} />
 <Route path="/announcements/:category" element={<AnnouncementList />} />
 <Route path="/announcements/detail/:id" element={<AnnouncementDetail />} />
+<Route path="/back-editions" element={<BackEditions />} />
 
 // MATERIALS
 <Route path="/materials" element={<MaterialList />} />
