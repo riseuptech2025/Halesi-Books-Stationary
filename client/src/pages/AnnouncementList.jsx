@@ -126,15 +126,43 @@ export default function AnnouncementList() {
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-red-300">
-                    <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                        d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                    <svg
+                      className="w-16 h-16"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
+                      />
                     </svg>
                   </div>
                 )}
                 <span className="absolute top-3 left-3 bg-white/90 backdrop-blur text-red-700 text-[10px] font-bold uppercase px-2.5 py-1 rounded-full shadow">
                   {categoryLabel(a.category)}
                 </span>
+
+                {/* 💡 Attachments badge */}
+                {a.documents?.length > 0 && (
+                  <span
+                    className="absolute top-3 right-3 bg-red-600 text-white text-[10px] font-bold uppercase px-2 py-1 rounded-full flex items-center gap-1 shadow"
+                    title={`${a.documents.length} attachment${
+                      a.documents.length !== 1 ? "s" : ""
+                    }`}
+                  >
+                    <svg
+                      className="w-3 h-3"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+                    </svg>
+                    {a.documents.length}
+                  </span>
+                )}
               </div>
 
               <div className="p-5 flex-1 flex flex-col">

@@ -5,21 +5,18 @@ import api from "../utils/api";
 const MAX_FILES = 10;
 const MAX_SIZE_MB = 20;
 
-// 🆕 Allowed MIME types (PDF + Word + PowerPoint + Excel)
+// Allowed MIME types
 const ALLOWED_TYPES = [
   "application/pdf",
-  // Word
   "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  // PowerPoint
   "application/vnd.ms-powerpoint",
   "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  // Excel
   "application/vnd.ms-excel",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 ];
 
-// 🆕 Fallback extension check (some browsers give empty/odd MIME types)
+// Fallback extension check (some browsers give odd/empty MIME types)
 const ALLOWED_EXT = /\.(pdf|doc|docx|ppt|pptx|xls|xlsx)$/i;
 
 export default function PdfUploader({ documents = [], onChange }) {
@@ -56,7 +53,7 @@ export default function PdfUploader({ documents = [], onChange }) {
 
     setUploading(true);
     try {
-      // 🆕 use /docs folder for non-PDFs, /pdf for PDFs
+      // Non-PDF files go to /docs, PDFs go to /pdf
       const hasNonPdf = toUpload.some(
         (f) => !f.name.toLowerCase().endsWith(".pdf")
       );
@@ -77,7 +74,7 @@ export default function PdfUploader({ documents = [], onChange }) {
         fd.append("timestamp", sign.timestamp);
         fd.append("signature", sign.signature);
         fd.append("folder", sign.folder);
-        fd.append("resource_type", sign.resourceType); // must be "raw"
+        fd.append("resource_type", sign.resourceType); // "raw"
 
         const resp = await fetch(sign.uploadUrl, {
           method: "POST",
@@ -133,11 +130,7 @@ export default function PdfUploader({ documents = [], onChange }) {
             className="flex items-center gap-3 bg-gray-50 rounded-lg p-3 border border-gray-200"
           >
             <div className="w-10 h-10 rounded-lg bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0">
-              <svg
-                className="w-5 h-5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
               </svg>
             </div>
@@ -160,18 +153,8 @@ export default function PdfUploader({ documents = [], onChange }) {
               className="w-8 h-8 rounded-full bg-red-50 hover:bg-red-100 text-red-600 flex items-center justify-center transition"
               title="Remove"
             >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
@@ -191,18 +174,8 @@ export default function PdfUploader({ documents = [], onChange }) {
               </>
             ) : (
               <>
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                  />
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
                 Upload File
               </>
@@ -220,9 +193,7 @@ export default function PdfUploader({ documents = [], onChange }) {
         onChange={handleFiles}
       />
 
-      {error && (
-        <p className="text-xs text-red-600 mt-2 font-medium">{error}</p>
-      )}
+      {error && <p className="text-xs text-red-600 mt-2 font-medium">{error}</p>}
     </div>
   );
 }

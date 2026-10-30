@@ -67,7 +67,9 @@ export default function AnnouncementDetail() {
 
       <div className="container-x max-w-3xl py-10">
         <nav className="flex items-center gap-2 text-xs text-gray-500 mb-6 flex-wrap">
-          <Link to="/" className="hover:text-red-700">Home</Link>
+          <Link to="/" className="hover:text-red-700">
+            Home
+          </Link>
           <span>/</span>
           <Link to="/announcements/all" className="hover:text-red-700">
             Announcements
@@ -142,6 +144,68 @@ export default function AnnouncementDetail() {
             </svg>
             Visit Official Website
           </a>
+        )}
+
+        {/* ===== Attachments ===== */}
+        {item.documents?.length > 0 && (
+          <div className="mt-10 bg-green-50 border-2 border-green-200 rounded-2xl p-6">
+            <h2 className="font-bold text-gray-900 mb-1 flex items-center gap-2">
+              <span className="w-1.5 h-5 bg-green-600 rounded-full" />
+              Attachments
+            </h2>
+            <p className="text-xs text-gray-600 mb-4">
+              {item.documents.length} file
+              {item.documents.length !== 1 ? "s" : ""} available for download.
+            </p>
+
+            <div className="space-y-2">
+              {item.documents.map((doc) => (
+                <a
+                  key={doc.publicId}
+                  href={doc.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 bg-white rounded-xl p-3 border border-green-200 hover:border-green-400 hover:shadow-md transition"
+                >
+                  <div className="w-10 h-12 rounded-lg bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0">
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-800 truncate">
+                      {doc.name}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {doc.size
+                        ? `${(doc.size / 1024 / 1024).toFixed(2)} MB`
+                        : ""}
+                    </p>
+                  </div>
+                  <span className="text-xs font-bold text-green-700 bg-green-100 px-3 py-1.5 rounded-full flex items-center gap-1 flex-shrink-0">
+                    <svg
+                      className="w-3.5 h-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
+                    </svg>
+                    Download
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
         )}
 
         <div className="mt-12 pt-6 border-t border-gray-200">
