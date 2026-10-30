@@ -172,7 +172,7 @@ export default function Contact() {
               +977-9863958892
             </a>
             <br />
-            Sun–Fri, 8am – 7pm
+            24/7 Online Support
           </p>
           <a
             href="https://wa.me/9779863958892"

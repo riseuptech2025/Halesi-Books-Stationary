@@ -10,7 +10,7 @@ export default function About() {
     },
     {
       title: "Our Vision",
-      text: "To become a trusted destination for books and stationery in Biratnagar, supporting education, encouraging reading, and helping learners access the resources they need to grow.",
+      text: "To become a trusted destination for books and stationery Nepal, supporting education, encouraging reading, and helping learners access the resources they need to grow.",
       color: "green",
       icon: "M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z M15 12a3 3 0 11-6 0 3 3 0 016 0z",
     },
