@@ -22,7 +22,7 @@ const emptyForm = {
   backEditionNote: "",
 };
 
-const LANGUAGES = ["English", "Nepali", "Hindi", "Sanskrit", "Tibetan", "Other"];
+const LANGUAGES = ["English", "Nepali", "Hindi", "Sanskrit", "Tibetan","English & Nepali", "Other"];
 const FORMATS = ["Paperback", "Hardcover", "E-Book", "Audiobook", "Spiral", "Other"];
 
 export default function BookFormModal({
