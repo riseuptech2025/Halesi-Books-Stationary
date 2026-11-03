@@ -5,15 +5,15 @@ import BookCard from "../components/BookCard";
 
 const CATEGORIES = [
   "All",
-  "General",
-  "Academic",
-  "Literature",
-  "Religion",
-  "Children",
-  "Loksewa",
-  "Reference",
-  "Entrance",
-  "License",
+  "General Books",
+  "Academic Books",
+  "Literature Books",
+  "Religion Books",
+  "Children Books",
+  "Loksewa Books",
+  "Reference Books",
+  "Entrance Books",
+  "License Books",
 ];
 
 const SORTS = [
