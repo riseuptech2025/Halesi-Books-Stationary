@@ -15,10 +15,24 @@ export default function Home() {
         const { data } = await api.get("/public/books", {
           params: { sort: "createdAt" },
         });
-        setFeatured(data.slice(0, 8));
+
+        // 💡 The API may return:
+        //   - a plain array  [ {...}, {...} ]       ← expected
+        //   - an object       { books: [...] }      ← possible
+        //   - something else  null / undefined      ← bug on backend
+        // Guard with Array.isArray so .slice / .map never crash.
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.books)
+          ? data.books
+          : [];
+
+        setFeatured(list.slice(0, 8));
 
         // Pick a live offer to announce
-        const withOffer = data.find((b) => b.offerName && b.hasDiscount);
+        const withOffer = list.find(
+          (b) => b?.offerName && b?.hasDiscount
+        );
         if (withOffer) {
           setOfferBanner({
             name: withOffer.offerName,
@@ -26,7 +40,8 @@ export default function Home() {
           });
         }
       } catch (err) {
-        console.error(err);
+        console.error("Home fetch error:", err);
+        setFeatured([]);
       } finally {
         setLoading(false);
       }
@@ -169,7 +184,7 @@ export default function Home() {
               </div>
             ))}
           </div>
-        ) : featured.length === 0 ? (
+        ) : (Array.isArray(featured) ? featured : []).length === 0 ? (
           <div className="bg-white rounded-2xl shadow-md p-12 text-center">
             <div className="w-16 h-16 mx-auto rounded-full bg-red-50 flex items-center justify-center mb-3">
               <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -188,7 +203,7 @@ export default function Home() {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
-            {featured.map((b) => (
+            {(Array.isArray(featured) ? featured : []).map((b) => (
               <BookCard key={b._id} book={b} />
             ))}
           </div>
