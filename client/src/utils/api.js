@@ -4,7 +4,7 @@ import axios from "axios";
 
 const baseURL =
   import.meta.env.VITE_API_BASE_URL ||
-  "https://halesi-books-stationary-ncy8.vercel.app/api";
+  "https://www.halesibooks.com.np/api";
 
 const api = axios.create({
   baseURL,
