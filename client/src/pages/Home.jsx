@@ -136,7 +136,7 @@ export default function Home() {
 
       {/* FEATURED BOOKS */}
       <section className="container-x py-16">
-        <div className="flex items-end justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-8">
           <div>
             <span className="text-xs font-bold uppercase tracking-widest text-red-700">
               Newly Added
@@ -147,7 +147,7 @@ export default function Home() {
           </div>
           <Link
             to="/books"
-            className="hidden sm:flex items-center gap-1 text-sm font-semibold text-red-700 hover:text-red-800 hover:underline"
+            className="flex items-center gap-1 text-sm font-semibold text-red-700 hover:text-red-800 hover:underline self-start sm:self-auto"
           >
             View all
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -187,11 +187,23 @@ export default function Home() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
-            {featured.map((b) => (
-              <BookCard key={b._id} book={b} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+              {featured.map((b) => (
+                <BookCard key={b._id} book={b} />
+              ))}
+            </div>
+
+            {/* Mobile-only "View all" button below the grid */}
+            <div className="mt-6 flex justify-center sm:hidden">
+              <Link to="/books" className="btn-outline inline-flex items-center gap-2">
+                View all books
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </div>
+          </>
         )}
       </section>
 
