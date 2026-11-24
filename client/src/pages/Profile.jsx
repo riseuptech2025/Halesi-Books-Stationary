@@ -580,7 +580,35 @@ function OrdersTab({ orders, onRefresh, showToast }) {
 // =================== CART ===================
 function CartTab({ items, total, onRefresh, showToast }) {
   const [busy, setBusy] = useState(null);
+  const [selected, setSelected] = useState(() => new Set());
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setSelected((prev) => {
+      const valid = new Set(items.map((item) => item.bookId));
+      const next = new Set();
+      for (const id of prev) {
+        if (valid.has(id)) next.add(id);
+      }
+      return next;
+    });
+  }, [items]);
+
+  const allSelected = items.length > 0 && selected.size === items.length;
+
+  const toggleOne = (bookId) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(bookId)) next.delete(bookId);
+      else next.add(bookId);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    if (allSelected) setSelected(new Set());
+    else setSelected(new Set(items.map((item) => item.bookId)));
+  };
 
   const updateQty = async (bookId, quantity) => {
     if (quantity < 1) return;
@@ -609,6 +637,19 @@ function CartTab({ items, total, onRefresh, showToast }) {
     }
   };
 
+  const goToCheckout = () => {
+    if (selected.size === 0) {
+      showToast("Select at least one book to check out");
+      return;
+    }
+    if (allSelected) {
+      navigate("/cart/checkout");
+    } else {
+      const ids = Array.from(selected).join(",");
+      navigate(`/cart/checkout?ids=${encodeURIComponent(ids)}`);
+    }
+  };
+
   if (items.length === 0) {
     return (
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12">
@@ -622,13 +663,39 @@ function CartTab({ items, total, onRefresh, showToast }) {
     );
   }
 
+  const selectedSubtotal = items
+    .filter((item) => selected.has(item.bookId))
+    .reduce((sum, item) => sum + Number(item.price) * Number(item.quantity), 0);
+
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-extrabold text-gray-900">My Cart</h2>
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h2 className="text-2xl font-extrabold text-gray-900">My Cart</h2>
+        <button
+          onClick={toggleAll}
+          className="text-xs font-semibold text-red-700 hover:underline"
+        >
+          {allSelected ? "Deselect all" : "Select all"}
+        </button>
+      </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 divide-y divide-gray-100">
-        {items.map((item) => (
-          <div key={item.bookId} className="p-4 flex items-center gap-4">
+        {items.map((item) => {
+          const isChecked = selected.has(item.bookId);
+          return (
+          <div
+            key={item.bookId}
+            className={`p-4 flex items-center gap-4 transition ${
+              isChecked ? "bg-red-50/40" : ""
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={isChecked}
+              onChange={() => toggleOne(item.bookId)}
+              className="w-4 h-4 rounded text-red-600 focus:ring-red-500 flex-shrink-0 cursor-pointer"
+              aria-label={`Select ${item.title}`}
+            />
             <Link to={`/books/${item.bookId}`} className="w-16 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
               {item.image ? (
                 <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
@@ -693,18 +760,33 @@ function CartTab({ items, total, onRefresh, showToast }) {
               </button>
             </div>
           </div>
-        ))}
+          );
+        })}
 
         <div className="p-5 bg-gradient-to-br from-red-50 to-yellow-50">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-semibold text-gray-700">Subtotal</span>
-            <span className="text-2xl font-extrabold text-green-700">NPR {Number(total).toLocaleString()}</span>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-semibold text-gray-700">
+              Selected subtotal
+              <span className="block text-xs text-gray-500 font-normal mt-0.5">
+                {selected.size} of {items.length} selected
+              </span>
+            </span>
+            <span className="text-2xl font-extrabold text-green-700">
+              NPR {Number(selectedSubtotal).toLocaleString()}
+            </span>
+          </div>
+          <div className="flex items-center justify-between mb-4 text-xs text-gray-500">
+            <span>Cart total (all items)</span>
+            <span className="font-semibold">
+              NPR {Number(total).toLocaleString()}
+            </span>
           </div>
           <button
-            onClick={() => navigate("/checkout")}
-            className="w-full bg-gradient-to-r from-red-700 to-red-600 hover:from-red-800 hover:to-red-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-red-500/30 hover:shadow-red-500/50 transition"
+            onClick={goToCheckout}
+            disabled={selected.size === 0}
+            className="w-full bg-gradient-to-r from-red-700 to-red-600 hover:from-red-800 hover:to-red-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-red-500/30 hover:shadow-red-500/50 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Proceed to Checkout
+            Proceed to Checkout ({selected.size})
           </button>
         </div>
       </div>
